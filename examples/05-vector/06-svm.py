@@ -38,7 +38,7 @@ classifier = SVM()
 # The pattern.vector module has a shuffled() function
 # which we use to randomly arrange the reviews in the list:
 
-print "loading data..."
+print("loading data...")
 data = Datasheet.load(os.path.join("..","..","test","corpora","polarity-nl-bol.com.csv"))
 data = shuffled(data)
 
@@ -65,7 +65,7 @@ def instance(review):                     # "Great book!"
 
 # Use 1,000 random instances as training material.
 
-print "training..."
+print("training...")
 for score, review in data[:1000]:
     classifier.train(instance(review), type=int(score) > 0)
 #classifier.save("sentiment-nl-svm.p")
@@ -73,7 +73,7 @@ for score, review in data[:1000]:
 
 # Use 500 random instances as test.
 
-print "testing..."
+print("testing...")
 i = n = 0
 for score, review in data[1000:1500]:
     if classifier.classify(instance(review)) == (int(score) > 0):
@@ -87,7 +87,7 @@ for score, review in data[1000:1500]:
 # study the documentation at:
 # http://www.clips.ua.ac.be/pages/pattern-metrics#accuracy
 
-print float(i) / n
+print(float(i) / n)
 
 # The work is not done here.
 # Low accuracy is disappointing, but high accuracy is often suspicious.

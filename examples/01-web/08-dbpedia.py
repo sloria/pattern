@@ -32,8 +32,8 @@ select ?actor where {
 }
 """
 for result in dbp.search(q, start=1, count=10):
-    print result.actor
-print
+    print(result.actor)
+print()
     
 # You may notice that each Result.actor is of the form: 
 # "http://dbpedia.org/resource/[NAME]"
@@ -51,8 +51,8 @@ select ?actor ?place where {
 order by ?actor
 """
 for r in dbp.search(q, start=1, count=10):
-    print "%s (%s)" % (r.actor.name, r.place.name)
-print
+    print("%s (%s)" % (r.actor.name, r.place.name))
+print()
 
 # You will notice that the results now include duplicates,
 # the same actor with a city name, and with a country name.
@@ -75,8 +75,8 @@ select ?actor ?date where {
 order by ?date
 """
 for r in dbp.search(q, start=1, count=10):
-    print "%s (%s)" % (r.actor.name, r.date)
-print
+    print("%s (%s)" % (r.actor.name, r.date))
+print()
 
 # We could also make this query shorter,
 # by combining the two ?actor triples into one:
@@ -97,8 +97,8 @@ select ?actor ?place where {
 order by ?actor
 """
 for r in dbp.search(q, start=1, count=10):
-    print "%s (%s)" % (r.actor, r.place)
-print
+    print("%s (%s)" % (r.actor, r.place))
+print()
 
 # This extracts a German label for each matched DBPedia resource.
 # - X is an actor,
@@ -129,12 +129,12 @@ select ?cat ?relation ?concept where {
 } order by ?cat
 """
 for r in dbp.search(q, start=1, count=10):
-    print "%s ---%s--> %s" % (r.cat.name, r.relation.ljust(10, "-"), r.concept)
-print
+    print("%s ---%s--> %s" % (r.cat.name, r.relation.ljust(10, "-"), r.concept))
+print()
 
 # 6) People whose first name includes "Édouard"
 
-q = u"""
+q = """
 prefix dbo: <http://dbpedia.org/ontology/>
 prefix foaf: <http://xmlns.com/foaf/0.1/>
 select ?person ?name where { 
@@ -144,5 +144,5 @@ select ?person ?name where {
 }
 """
 for result in dbp.search(q, start=1, count=10, cached=False):
-    print "%s (%s)" % (result.person.name, result.name)
-print
+    print("%s (%s)" % (result.person.name, result.name))
+print()

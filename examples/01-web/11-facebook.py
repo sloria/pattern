@@ -32,10 +32,10 @@ fb = Facebook()
 # Keeping a local cache can also be useful (e.g., while testing)
 # because a query is instant when it is executed the second time.
 for status in fb.search("horrible", count=25, cached=False):
-    print status.text
-    print status.author # Yields an (id, name)-tuple.
-    print status.date
-    print
+    print(status.text)
+    print(status.author) # Yields an (id, name)-tuple.
+    print(status.date)
+    print()
     # Only add the tweet to the table if it doesn't already exists.
     if len(table) == 0 or status.id not in index:
         table.append([status.id, status.text])
@@ -56,15 +56,15 @@ if license != "":
     # You can also supply the id of another profile.
     me = fb.profile()[0]
     for status in fb.search(me, type=NEWS, count=20, cached=False):
-        print status.id   # Status update unique id.
-        print status.text # Status update text.
-        print status.url  # Status update image, external link, ...
+        print(status.id)   # Status update unique id.
+        print(status.text) # Status update text.
+        print(status.url)  # Status update image, external link, ...
         if status.comments > 0:
             # Retrieve comments on the status update.
-            print "%s comments:" % status.comments
-            print [(x.text, x.author) for x in fb.search(status.id, type=COMMENTS)]
+            print("%s comments:" % status.comments)
+            print([(x.text, x.author) for x in fb.search(status.id, type=COMMENTS)])
         if status.likes > 0:
             # Retrieve likes on the status update.
-            print "%s likes:" % status.likes
-            print [x.author for x in fb.search(status.id, type=LIKES)]
-        print
+            print("%s likes:" % status.likes)
+            print([x.author for x in fb.search(status.id, type=LIKES)])
+        print()

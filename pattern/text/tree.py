@@ -194,7 +194,7 @@ class Word(object):
     def __getattr__(self, tag):
         if tag in self.__dict__.get("custom_tags",()):
             return self.__dict__["custom_tags"][tag]
-        raise AttributeError, "Word instance has no attribute '%s'" % tag
+        raise AttributeError("Word instance has no attribute '%s'" % tag)
 
     # Word.string and unicode(Word) are Unicode strings.
     # repr(Word) is a Python string (with Unicode characters encoded).
@@ -285,7 +285,7 @@ class Chunk(object):
         return self.words[-1].index + 1
     @property
     def range(self):
-        return range(self.start, self.stop)
+        return list(range(self.start, self.stop))
     @property
     def span(self):
         return (self.start, self.stop)
@@ -353,7 +353,7 @@ class Chunk(object):
         """
         id = ""
         # Yields all anchor tags (e.g. A1, P1, ...) of the given chunk.
-        f = lambda ch: filter(lambda k: self.sentence._anchors[k] == ch, self.sentence._anchors)
+        f = lambda ch: [k for k in self.sentence._anchors if self.sentence._anchors[k] == ch]
         if self.pnp and self.pnp.anchor:
             id += "-"+"-".join(f(self.pnp))
         if self.anchor:
@@ -415,7 +415,7 @@ class Chunk(object):
     # repr(Chunk) is a Python string (with Unicode characters encoded).
     @property
     def string(self):
-        return u" ".join([word.string for word in self.words])
+        return " ".join([word.string for word in self.words])
     def __unicode__(self):
         return self.string
     def __repr__(self):
@@ -508,7 +508,7 @@ def _is_tokenstring(string):
     # The class mbsp.TokenString stores the format of tags for each token.
     # Since it comes directly from MBSP.parse(), this format is always correct,
     # regardless of the given token format parameter for Sentence() or Text().
-    return isinstance(string, unicode) and hasattr(string, "tags")
+    return isinstance(string, str) and hasattr(string, "tags")
 
 class Sentence:
 
@@ -595,13 +595,13 @@ class Sentence:
 
     @property
     def subjects(self):
-        return self.relations["SBJ"].values()
+        return list(self.relations["SBJ"].values())
     @property
     def objects(self):
-        return self.relations["OBJ"].values()
+        return list(self.relations["OBJ"].values())
     @property
     def verbs(self):
-        return self.relations["VP"].values()
+        return list(self.relations["VP"].values())
         
     @property
     def anchors(self):
@@ -869,7 +869,7 @@ class Sentence:
         match = lambda a, b: a.endswith("*") and b.startswith(a[:-1]) or a==b
         indices = []
         for i in range(len(self.words)):
-            if match(value, unicode(self.get(i, tag))):
+            if match(value, str(self.get(i, tag))):
                 indices.append(i)
         return indices
 
@@ -933,7 +933,7 @@ class Sentence:
     # repr(Sentence) is a Python strings (with Unicode characters encoded).
     @property
     def string(self):
-        return u" ".join([word.string for word in self])
+        return " ".join([word.string for word in self])
     def __unicode__(self):
         return self.string
     def __repr__(self):
@@ -1040,7 +1040,7 @@ class Text(list):
     # Text.string and unicode(Text) are Unicode strings.
     @property
     def string(self):
-        return u"\n".join([unicode(sentence) for sentence in self])
+        return "\n".join([str(sentence) for sentence in self])
     def __unicode__(self):
         return self.string
     #def __repr__(self):
@@ -1228,8 +1228,8 @@ def parse_xml(sentence, tab="\t", id=""):
             XML_WORD,
             word.type and ' %s="%s"' % (XML_TYPE, xml_encode(word.type)) or '',
             word.lemma and ' %s="%s"' % (XML_LEMMA, xml_encode(word.lemma)) or '',
-            (" "+" ".join(['%s="%s"' % (k,v) for k,v in word.custom_tags.items() if v != None])).rstrip(),
-            xml_encode(unicode(word)),
+            (" "+" ".join(['%s="%s"' % (k,v) for k,v in list(word.custom_tags.items()) if v != None])).rstrip(),
+            xml_encode(str(word)),
             XML_WORD
         ))
         if not chunk:
@@ -1290,11 +1290,11 @@ _attachments = {} # {u'A1': [[[u'with', u'IN', u'B-PP', 'B-PNP', u'PP', 'O', u'w
 
 # This is a fallback if for some reason we fail to import MBSP.TokenString,
 # e.g. when tree.py is part of another project.
-class TaggedString(unicode):
+class TaggedString(str):
     def __new__(cls, string, tags=["word"], language="en"):
-        if isinstance(string, unicode) and hasattr(string, "tags"): 
+        if isinstance(string, str) and hasattr(string, "tags"): 
             tags, language = string.tags, getattr(string, "language", language)
-        s = unicode.__new__(cls, string)
+        s = str.__new__(cls, string)
         s.tags = list(tags)
         s.language = language
         return s
@@ -1315,7 +1315,7 @@ def parse_string(xml):
         # This information is returned in TokenString.tags,
         # so the format and order of the token tags is retained when exporting/importing as XML.
         format = sentence.get(XML_TOKEN, [WORD, POS, CHUNK, PNP, REL, ANCHOR, LEMMA])
-        format = not isinstance(format, basestring) and format or format.replace(" ","").split(",")
+        format = not isinstance(format, str) and format or format.replace(" ","").split(",")
         # Traverse all <chunk> and <chink> elements in the sentence.
         # Find the <word> elements inside and create tokens.
         tokens = []
@@ -1380,7 +1380,7 @@ def _parse_tokens(chunk, format=[WORD, POS, CHUNK, PNP, REL, ANCHOR, LEMMA]):
     relation = _parse_relation(chunk, type)
     # Process all of the <word> elements in the chunk, for example:
     # <word type="NN" lemma="pizza">pizza</word> => [pizza, NN, I-NP, O, NP-OBJ-1, O, pizza]
-    for word in filter(lambda n: n.tag == XML_WORD, chunk):
+    for word in [n for n in chunk if n.tag == XML_WORD]:
         tokens.append(_parse_token(word, chunk=type, relation=relation, format=format))
     # Add the IOB chunk tags:
     # words at the start of a chunk are marked with B-, words inside with I-.

@@ -14,38 +14,38 @@ import warnings; warnings.filterwarnings(action='ignore', category=DeprecationWa
 import threading
 import time
 import os
-import socket, urlparse, urllib, urllib2
+import socket, urllib.parse, urllib.request, urllib.parse, urllib.error, urllib.request, urllib.error, urllib.parse
 import base64
-import htmlentitydefs
+import html.entities
 import sgmllib
 import re
 import xml.dom.minidom
-import StringIO
+import io
 import bisect
 import itertools
 import new
 
-import api
-import feed
-import oauth
-import json
-import locale
+from . import api
+from . import feed
+from . import oauth
+from . import json
+from . import locale
 
-from feed import feedparser
-from soup import BeautifulSoup
+from .feed import feedparser
+from .soup import BeautifulSoup
 
 try:
     # Import persistent Cache.
     # If this module is used separately,
     # a dict is used (i.e. this Python session only).
-    from cache import Cache, cache, TMP
+    from .cache import Cache, cache, TMP
 except:
     cache = {}
 
 try:
-    from imap import Mail, MailFolder, Message, GMAIL
-    from imap import MailError, MailServiceError, MailLoginError, MailNotLoggedIn
-    from imap import FROM, SUBJECT, DATE, BODY, ATTACHMENTS
+    from .imap import Mail, MailFolder, Message, GMAIL
+    from .imap import MailError, MailServiceError, MailLoginError, MailNotLoggedIn
+    from .imap import FROM, SUBJECT, DATE, BODY, ATTACHMENTS
 except:
     pass
 
@@ -62,7 +62,7 @@ except:
 def decode_string(v, encoding="utf-8"):
     """ Returns the given value as a Unicode string (if possible).
     """
-    if isinstance(encoding, basestring):
+    if isinstance(encoding, str):
         encoding = ((encoding,),) + (("windows-1252",), ("utf-8", "ignore"))
     if isinstance(v, str):
         for e in encoding:
@@ -70,14 +70,14 @@ def decode_string(v, encoding="utf-8"):
             except:
                 pass
         return v
-    return unicode(v)
+    return str(v)
 
 def encode_string(v, encoding="utf-8"):
     """ Returns the given value as a Python byte string (if possible).
     """
-    if isinstance(encoding, basestring):
+    if isinstance(encoding, str):
         encoding = ((encoding,),) + (("windows-1252",), ("utf-8", "ignore"))
-    if isinstance(v, unicode):
+    if isinstance(v, str):
         for e in encoding:
             try: return v.encode(*e)
             except:
@@ -116,7 +116,7 @@ class AsynchronousRequest(object):
         """
         try:
             self._response = function(*args, **kwargs)
-        except Exception, e:
+        except Exception as e:
             self._error = e
 
     def now(self):
@@ -199,8 +199,8 @@ def urldecode(query):
     if query:
         query = query.lstrip("?").split("&")
         query = ((kv.split("=") + [None])[:2] for kv in query)
-        query = ((u(urllib.unquote_plus(bytestring(k))),
-          _format(u(urllib.unquote_plus(bytestring(v))))) for k, v in query if k != "")
+        query = ((u(urllib.parse.unquote_plus(bytestring(k))),
+          _format(u(urllib.parse.unquote_plus(bytestring(v))))) for k, v in query if k != "")
         return dict(query)
     return {}
 
@@ -245,7 +245,7 @@ class HTTP500InternalServerError(HTTPError):
 
 class URL(object):
 
-    def __init__(self, string=u"", method=GET, query={}, **kwargs):
+    def __init__(self, string="", method=GET, query={}, **kwargs):
         """ URL object with the individual parts available as attributes:
             For protocol://username:password@domain:port/path/page?query_string#anchor:
             - URL.protocol: http, https, ftp, ...
@@ -280,21 +280,21 @@ class URL(object):
             For example: http://user:pass@example.com:992/animal/bird?species=seagull&q#wings
             This is a cached method that is only invoked when necessary, and only once.
         """
-        p = urlparse.urlsplit(self._string)
+        p = urllib.parse.urlsplit(self._string)
         P = {PROTOCOL: p[0],            # http
-             USERNAME: u"",             # user
-             PASSWORD: u"",             # pass
+             USERNAME: "",             # user
+             PASSWORD: "",             # pass
                DOMAIN: p[1],            # example.com
-                 PORT: u"",             # 992
+                 PORT: "",             # 992
                  PATH: p[2],            # [animal]
-                 PAGE: u"",             # bird
+                 PAGE: "",             # bird
                 QUERY: urldecode(p[3]), # {"species": "seagull", "q": None}
                ANCHOR: p[4]             # wings
         }
         # Split the username and password from the domain.
         if "@" in P[DOMAIN]:
             P[USERNAME], \
-            P[PASSWORD] = (p[1].split("@")[0].split(":")+[u""])[:2]
+            P[PASSWORD] = (p[1].split("@")[0].split(":")+[""])[:2]
             P[DOMAIN]   =  p[1].split("@")[1]
         # Split the port number from the domain.
         if ":" in P[DOMAIN]:
@@ -305,7 +305,7 @@ class URL(object):
         if "/" in P[PATH]:
             P[PAGE] = p[2].split("/")[-1]
             P[PATH] = p[2][:len(p[2]) - len(P[PAGE])].strip("/").split("/")
-            P[PATH] = filter(lambda v: v != "", P[PATH])
+            P[PATH] = [v for v in P[PATH] if v != ""]
         else:
             P[PAGE] = p[2].strip("/")
             P[PATH] = []
@@ -313,7 +313,7 @@ class URL(object):
 
     # URL.string yields unicode(URL) by joining the different parts,
     # if the URL parts have been modified.
-    def _get_string(self): return unicode(self)
+    def _get_string(self): return str(self)
     def _set_string(self, v):
         self.__dict__["_string"] = u(v)
         self.__dict__["_parts"]  = None
@@ -331,22 +331,22 @@ class URL(object):
     def querystring(self):
         """ Yields the URL querystring: "www.example.com?page=1" => "page=1"
         """
-        s = self.parts[QUERY].items()
+        s = list(self.parts[QUERY].items())
         s = dict((bytestring(k), bytestring(v if v is not None else "")) for k, v in s)
-        s = urllib.urlencode(s)
+        s = urllib.parse.urlencode(s)
         return s
 
     def __getattr__(self, k):
         if k in self.__dict__ : return self.__dict__[k]
         if k in self.parts    : return self.__dict__["_parts"][k]
-        raise AttributeError, "'URL' object has no attribute '%s'" % k
+        raise AttributeError("'URL' object has no attribute '%s'" % k)
 
     def __setattr__(self, k, v):
         if k in self.__dict__ : self.__dict__[k] = u(v); return
         if k == "string"      : self._set_string(v); return
         if k == "query"       : self.parts[k] = v; return
         if k in self.parts    : self.__dict__["_parts"][k] = u(v); return
-        raise AttributeError, "'URL' object has no attribute '%s'" % k
+        raise AttributeError("'URL' object has no attribute '%s'" % k)
 
     def open(self, timeout=10, proxy=None, user_agent=USER_AGENT, referrer=REFERRER, authentication=None):
         """ Returns a connection to the url from which data can be retrieved with connection.read().
@@ -356,16 +356,16 @@ class URL(object):
         url = self.string
         # Use basic urllib.urlopen() instead of urllib2.urlopen() for local files.
         if os.path.exists(url):
-            return urllib.urlopen(url)
+            return urllib.request.urlopen(url)
         # Get the query string as a separate parameter if method=POST.
         post = self.method == POST and self.querystring or None
         socket.setdefaulttimeout(timeout)
         if proxy:
-            proxy = urllib2.ProxyHandler({proxy[1]: proxy[0]})
-            proxy = urllib2.build_opener(proxy, urllib2.HTTPHandler)
-            urllib2.install_opener(proxy)
+            proxy = urllib.request.ProxyHandler({proxy[1]: proxy[0]})
+            proxy = urllib.request.build_opener(proxy, urllib.request.HTTPHandler)
+            urllib.request.install_opener(proxy)
         try:
-            request = urllib2.Request(bytestring(url), post, {
+            request = urllib.request.Request(bytestring(url), post, {
                         "User-Agent": user_agent,
                            "Referer": referrer
                          })
@@ -373,8 +373,8 @@ class URL(object):
             if authentication is not None:
                 request.add_header("Authorization", "Basic %s" %
                     base64.encodestring('%s:%s' % authentication))
-            return urllib2.urlopen(request)
-        except urllib2.HTTPError, e:
+            return urllib.request.urlopen(request)
+        except urllib.error.HTTPError as e:
             if e.code == 301: raise HTTP301Redirect(src=e)
             if e.code == 400: raise HTTP400BadRequest(src=e)
             if e.code == 401: raise HTTP401Authentication(src=e)
@@ -384,17 +384,17 @@ class URL(object):
             if e.code == 429: raise HTTP429TooMayRequests(src=e)
             if e.code == 500: raise HTTP500InternalServerError(src=e)
             raise HTTPError(src=e)
-        except socket.timeout, e:
+        except socket.timeout as e:
             raise URLTimeout(src=e)
-        except urllib2.URLError, e:
+        except urllib.error.URLError as e:
             if e.reason == "timed out" \
             or e.reason[0] in (36, "timed out"):
                 raise URLTimeout(src=e)
             raise URLError(e.reason, src=e)
-        except ValueError, e:
+        except ValueError as e:
             raise URLError(src=e)
 
-    def download(self, timeout=10, cached=True, throttle=0, proxy=None, user_agent=USER_AGENT, referrer=REFERRER, authentication=None, unicode=False, **kwargs):
+    def download(self, timeout=10, cached=True, throttle=0, proxy=None, user_agent=USER_AGENT, referrer=REFERRER, authentication=None, str=False, **kwargs):
         """ Downloads the content at the given URL (by default it will be cached locally).
             Unless unicode=False, the content is returned as a unicode string.
         """
@@ -405,22 +405,22 @@ class URL(object):
             id = repr(self.parts)
             id = re.sub("u{0,1}'oauth_.*?': u{0,1}'.*?', ", "", id)
         # Keep a separate cache of unicode and raw download for same URL.
-        if unicode is True:
+        if str is True:
             id = "u" + id
         if cached and id in cache:
             if isinstance(cache, dict): # Not a Cache object.
                 return cache[id]
-            if unicode is True:
+            if str is True:
                 return cache[id]
-            if unicode is False:
-                return cache.get(id, unicode=False)
+            if str is False:
+                return cache.get(id, str=False)
         t = time.time()
         # Open a connection with the given settings, read it and (by default) cache the data.
         try:
             data = self.open(timeout, proxy, user_agent, referrer, authentication).read()
-        except socket.timeout, e:
+        except socket.timeout as e:
             raise URLTimeout(src=e)
-        if unicode is True:
+        if str is True:
             data = u(data)
         if cached:
             cache[id] = data
@@ -438,7 +438,7 @@ class URL(object):
         try: self.open(timeout)
         except HTTP404NotFound:
             return False
-        except HTTPError, URLTimeoutError:
+        except HTTPError as URLTimeoutError:
             return True
         except URLError:
             return False
@@ -508,7 +508,7 @@ class URL(object):
             u.append("?%s" % self.querystring)
         if P[ANCHOR]:
             u.append("#%s" % P[ANCHOR])
-        u = u"".join(u)
+        u = "".join(u)
         u = u.lstrip("/")
         return u
 
@@ -518,11 +518,11 @@ class URL(object):
     def copy(self):
         return URL(self.string, self.method, self.query)
 
-def download(url=u"", method=GET, query={}, timeout=10, cached=True, throttle=0, proxy=None, user_agent=USER_AGENT, referrer=REFERRER, authentication=None, unicode=False):
+def download(url="", method=GET, query={}, timeout=10, cached=True, throttle=0, proxy=None, user_agent=USER_AGENT, referrer=REFERRER, authentication=None, str=False):
     """ Downloads the content at the given URL (by default it will be cached locally).
         Unless unicode=False, the content is returned as a unicode string.
     """
-    return URL(url, method, query).download(timeout, cached, throttle, proxy, user_agent, referrer, authentication, unicode)
+    return URL(url, method, query).download(timeout, cached, throttle, proxy, user_agent, referrer, authentication, str)
 
 #url = URL("http://user:pass@example.com:992/animal/bird?species#wings")
 #print url.parts
@@ -600,7 +600,7 @@ def find_urls(string, unique=True):
         and followed by trailing punctuation (period, comma, close parens).
     """
     string = u(string)
-    string = string.replace(u"\u2024", ".")
+    string = string.replace("\u2024", ".")
     string = string.replace(" ", "  ")
     matches = []
     for p in (RE_URL1, RE_URL2, RE_URL3):
@@ -618,7 +618,7 @@ RE_EMAIL = re.compile(r"[\w\-\.\+]+@(\w[\w\-]+\.)+[\w\-]+") # tom.de+smedt@clips
 def find_email(string, unique=True):
     """ Returns a list of e-mail addresses parsed from the string.
     """
-    string = u(string).replace(u"\u2024", ".")
+    string = u(string).replace("\u2024", ".")
     matches = []
     for m in RE_EMAIL.finditer(string):
         s = m.group(0)
@@ -811,7 +811,7 @@ def encode_entities(string):
         For example, to display "<em>hello</em>" in a browser,
         we need to pass "&lt;em&gt;hello&lt;/em&gt;" (otherwise "hello" in italic is displayed).
     """
-    if isinstance(string, (str, unicode)):
+    if isinstance(string, str):
         string = RE_AMPERSAND.sub("&amp;", string)
         string = string.replace("<", "&lt;")
         string = string.replace(">", "&gt;")
@@ -827,20 +827,20 @@ def decode_entities(string):
         hash, hex, name = match.group(1), match.group(2), match.group(3)
         if hash == "#" or name.isdigit():
             if hex == '' :
-                return unichr(int(name))                 # "&#38;" => "&"
+                return chr(int(name))                 # "&#38;" => "&"
             if hex in ("x","X"):
-                return unichr(int('0x'+name, 16))        # "&#x0026;" = > "&"
+                return chr(int('0x'+name, 16))        # "&#x0026;" = > "&"
         else:
-            cp = htmlentitydefs.name2codepoint.get(name) # "&amp;" => "&"
-            return cp and unichr(cp) or match.group()    # "&foo;" => "&foo;"
-    if isinstance(string, (str, unicode)):
+            cp = html.entities.name2codepoint.get(name) # "&amp;" => "&"
+            return cp and chr(cp) or match.group()    # "&foo;" => "&foo;"
+    if isinstance(string, str):
         return RE_UNICODE.subn(replace_entity, string)[0]
     return string
 
 def encode_url(string):
-    return urllib.quote_plus(bytestring(string)) # "black/white" => "black%2Fwhite".
+    return urllib.parse.quote_plus(bytestring(string)) # "black/white" => "black%2Fwhite".
 def decode_url(string):
-    return urllib.unquote_plus(string)
+    return urllib.parse.unquote_plus(string)
 
 RE_SPACES = re.compile("( |\xa0)+", re.M) # Matches one or more spaces.
 RE_TABS   = re.compile(r"\t+", re.M)      # Matches one or more tabs.
@@ -945,20 +945,20 @@ class Result(dict):
         return URL(self.url).download(*args, **kwargs)
 
     def __getattr__(self, k):
-        return self.get(k, u"")
+        return self.get(k, "")
     def __getitem__(self, k):
-        return self.get(k, u"")
+        return self.get(k, "")
     def __setattr__(self, k, v):
-        dict.__setitem__(self, u(k), v is not None and u(v) or u"") # Store strings as unicode.
+        dict.__setitem__(self, u(k), v is not None and u(v) or "") # Store strings as unicode.
     def __setitem__(self, k, v):
-        dict.__setitem__(self, u(k), v is not None and u(v) or u"")
+        dict.__setitem__(self, u(k), v is not None and u(v) or "")
 
     def setdefault(self, k, v):
         dict.setdefault(self, u(k), u(v))
     def update(self, *args, **kwargs):
         map = dict()
         map.update(*args, **kwargs)
-        dict.update(self, [(u(k), u(v)) for k, v in map.items()])
+        dict.update(self, [(u(k), u(v)) for k, v in list(map.items())])
 
     def __repr__(self):
         return "Result(%s)" % dict.__repr__(self)
@@ -1084,7 +1084,7 @@ class Google(SearchEngine):
         try:
             data = url.download(**kwargs)
         except HTTP403Forbidden:
-            raise HTTP401Authentication, "Google translate API is a paid service"
+            raise HTTP401Authentication("Google translate API is a paid service")
         data = json.loads(data)
         data = data.get("data", {}).get("translations", [{}])[0].get("translatedText", "")
         data = decode_entities(data)
@@ -1104,7 +1104,7 @@ class Google(SearchEngine):
         try:
             data = url.download(**kwargs)
         except HTTP403Forbidden:
-            raise HTTP401Authentication, "Google translate API is a paid service"
+            raise HTTP401Authentication("Google translate API is a paid service")
         data = json.loads(data)
         data = data.get("data", {}).get("detections", [[{}]])[0][0]
         data = u(data.get("language")), float(data.get("confidence"))
@@ -1174,7 +1174,7 @@ class Yahoo(SearchEngine):
         try:
             data = url.download(cached=cached, **kwargs)
         except HTTP401Authentication:
-            raise HTTP401Authentication, "Yahoo %s API is a paid service" % type
+            raise HTTP401Authentication("Yahoo %s API is a paid service" % type)
         except HTTP403Forbidden:
             raise SearchEngineLimitError
         data = json.loads(data)
@@ -1255,7 +1255,7 @@ class Bing(SearchEngine):
         try:
             data = url.download(cached=cached, **kwargs)
         except HTTP401Authentication:
-            raise HTTP401Authentication, "Bing %s API is a paid service" % type
+            raise HTTP401Authentication("Bing %s API is a paid service" % type)
         data = json.loads(data)
         data = data.get("d", {})
         data = data.get("results", [{}])[0]
@@ -1455,7 +1455,7 @@ class Twitter(SearchEngine):
         # 2) Restrict location with geo=(latitude, longitude, radius).
         #    It can also be a (latitude, longitude)-tuple with default radius "10km".
         if "geo" in kwargs:
-            url.query["geocode"] = ",".join((map(str, kwargs.pop("geo")) + ["10km"])[:3])
+            url.query["geocode"] = ",".join((list(map(str, kwargs.pop("geo"))) + ["10km"])[:3])
         # 3) Restrict most recent with date="YYYY-MM-DD".
         #    Only older tweets are returned.
         if "date" in kwargs:
@@ -1755,7 +1755,7 @@ class MediaWiki(SearchEngine):
 
 class MediaWikiArticle(object):
 
-    def __init__(self, title=u"", source=u"", links=[], categories=[], languages={}, disambiguation=False, **kwargs):
+    def __init__(self, title="", source="", links=[], categories=[], languages={}, disambiguation=False, **kwargs):
         """ A MediaWiki article returned from MediaWiki.search().
             MediaWikiArticle.string contains the HTML content.
         """
@@ -1770,7 +1770,7 @@ class MediaWikiArticle(object):
         self.languages      = languages      # Dictionary of (language, article)-items, e.g. Cat => ("nl", "Kat")
         self.language       = kwargs.get("language", "en")
         self.parser         = kwargs.get("parser", MediaWiki())
-        for k, v in kwargs.items():
+        for k, v in list(kwargs.items()):
             setattr(self, k, v)
 
     def _plaintext(self, string, **kwargs):
@@ -1810,7 +1810,7 @@ class MediaWikiArticle(object):
 
 class MediaWikiSection(object):
 
-    def __init__(self, article, title=u"", start=0, stop=0, level=1):
+    def __init__(self, article, title="", start=0, stop=0, level=1):
         """ A (nested) section in the content of a MediaWikiArticle.
         """
         self.article  = article # MediaWikiArticle the section is part of.
@@ -1885,7 +1885,7 @@ class MediaWikiSection(object):
 
 class MediaWikiTable(object):
 
-    def __init__(self, section, title=u"", headers=[], rows=[], source=u""):
+    def __init__(self, section, title="", headers=[], rows=[], source=""):
         """ A <table class="wikitable> in a MediaWikiSection.
         """
         self.section = section # MediaWikiSection the table is part of.
@@ -2013,7 +2013,7 @@ class Wikia(MediaWiki):
             while True:
                 batch, done = [], False
                 try:
-                    for i in range(10): batch.append(iterator.next())
+                    for i in range(10): batch.append(next(iterator))
                 except StopIteration:
                     done = True # No more articles, finish batch and raise StopIteration.
                 url = URL(self._url.replace("api.php", "wikia.php"), method=GET, query={
@@ -2027,7 +2027,7 @@ class Wikia(MediaWiki):
                 kwargs["timeout"] = 10 * (1 + len(batch))
                 data = url.download(**kwargs)
                 data = json.loads(data)
-                for x in (data or {}).get("pages", {}).values():
+                for x in list((data or {}).get("pages", {}).values()):
                     yield WikiaArticle(title=x.get("title", ""), source=x.get("html", ""))
                 if done:
                     raise StopIteration
@@ -2081,7 +2081,7 @@ SPARQL = "sparql"
 class DBPediaQueryError(HTTP400BadRequest):
     pass
 
-class DBPediaResource(unicode):
+class DBPediaResource(str):
     @property
     def name(self):
         # http://dbpedia.org/resource/Australia => Australia
@@ -2122,8 +2122,8 @@ class DBPedia(SearchEngine):
         try:
             data = URL(url).download(cached=cached, timeout=30, **kwargs)
             data = json.loads(data)
-        except HTTP400BadRequest, e:
-            raise DBPediaQueryError, e.src.read().splitlines()[0]
+        except HTTP400BadRequest as e:
+            raise DBPediaQueryError(e.src.read().splitlines()[0])
         except HTTP403Forbidden:
             raise SearchEngineLimitError
         results = Results(DBPEDIA, url.query, type)
@@ -2216,7 +2216,7 @@ class FlickrResult(Result):
         # Note: the "Original" size no longer appears in the response,
         # so Flickr might not like it if we download it.
         url = FLICKR + "?method=flickr.photos.getSizes&photo_id=%s&api_key=%s" % (self._id, self._license)
-        data = URL(url).download(throttle=self._throttle, unicode=True)
+        data = URL(url).download(throttle=self._throttle, str=True)
         data = xml.dom.minidom.parseString(bytestring(data))
         size = { TINY: "Thumbnail",
                 SMALL: "Small",
@@ -2541,7 +2541,7 @@ def query(string, service=GOOGLE, **kwargs):
                 kw[a] = kwargs.pop(a)
         return engine(kw).search(string, **kwargs)
     except UnboundLocalError:
-        raise SearchEngineError, "unknown search engine '%s'" % service
+        raise SearchEngineError("unknown search engine '%s'" % service)
 
 #--- WEB SORT --------------------------------------------------------------------------------------
 
@@ -2660,7 +2660,7 @@ class Node(object):
         """
         visit(self); [node.traverse(visit) for node in self.children]
 
-    def __nonzero__(self):
+    def __bool__(self):
         return True
 
     def __len__(self):
@@ -2729,7 +2729,7 @@ class Element(Node):
     def content(self):
         """ Yields the element content as a unicode string.
         """
-        return u"".join([u(x) for x in self._p.contents])
+        return "".join([u(x) for x in self._p.contents])
 
     @property
     def source(self):
@@ -2743,11 +2743,11 @@ class Element(Node):
         """ Returns a list of nested Elements with the given tag name.
             The tag name can include a class (e.g. div.header) or an id (e.g. div#content).
         """
-        if isinstance(v, basestring) and "#" in v:
+        if isinstance(v, str) and "#" in v:
             v1, v2 = v.split("#")
             v1 = v1 in ("*","") or v1.lower()
             return [Element(x) for x in self._p.findAll(v1, id=v2)]
-        if isinstance(v, basestring) and "." in v:
+        if isinstance(v, str) and "." in v:
             v1, v2 = v.split(".")
             v1 = v1 in ("*","") or v1.lower()
             return [Element(x) for x in self._p.findAll(v1, v2)]
@@ -2787,7 +2787,7 @@ class Element(Node):
             return self.__dict__[k]
         if k in self.attributes:
             return self.attributes[k]
-        raise AttributeError, "'Element' object has no attribute '%s'" % k
+        raise AttributeError("'Element' object has no attribute '%s'" % k)
 
     def __repr__(self):
         return "Element(tag='%s')" % bytestring(self.tagname)
@@ -2909,7 +2909,7 @@ class Selector(object):
         """ Returns the first next sibling Element of the given element.
         """
         while isinstance(e, Node):
-            e = e.next
+            e = e.__next__
             if isinstance(e, Element):
                 return e
 
@@ -2939,18 +2939,18 @@ class Selector(object):
         # Map id into a case-insensitive **kwargs dict.
         i = lambda s: re.compile("^%s$" % s, re.I)
         a = {"id": i(self.id)} if self.id else {}
-        a.update(map(lambda (k, v): (k, i(v)), self.attributes.iteritems()))
+        a.update([(k_v[0], i(k_v[1])) for k_v in iter(self.attributes.items())])
         # Match tag + id + all classes + relevant pseudo-elements.
         if not isinstance(e, Element):
             return []
         if len(self.classes) == 0 or len(self.classes) >= 2:
-            e = map(Element, e._p.findAll(tag, **a))
+            e = list(map(Element, e._p.findAll(tag, **a)))
         if len(self.classes) == 1:
-            e = map(Element, e._p.findAll(tag, **dict(a, **{"class": i(list(self.classes)[0])})))
+            e = list(map(Element, e._p.findAll(tag, **dict(a, **{"class": i(list(self.classes)[0])}))))
         if len(self.classes) >= 2:
-            e = filter(lambda e: self.classes.issubset(set(map(str.lower, e.attr.get("class", "").split()))), e)
+            e = [e for e in e if self.classes.issubset(set(map(str.lower, e.attr.get("class", "").split())))]
         if "first-child" in self.pseudo:
-            e = filter(lambda e: e == self._first_child(e.parent), e)
+            e = [e for e in e if e == self._first_child(e.parent)]
         return e
 
     def __repr__(self):
@@ -2990,20 +2990,20 @@ class SelectorChain(list):
             for combinator, s in chain:
                 if combinator == " ":
                     # X Y => X is ancestor of Y
-                    e = map(s.search, e)
+                    e = list(map(s.search, e))
                     e = list(itertools.chain(*e))
                 if combinator == ">":
                     # X > Y => X is parent of Y
-                    e = map(lambda e: filter(s.match, e.children), e)
+                    e = [list(filter(s.match, e.children)) for e in e]
                     e = list(itertools.chain(*e))
                 if combinator == "<":
                     # X < Y => X is child of Y
-                    e = map(lambda e: e.parent, e)
-                    e = filter(s.match, e)
+                    e = [e.parent for e in e]
+                    e = list(filter(s.match, e))
                 if combinator == "+":
                     # X + Y => X directly precedes Y
-                    e = map(s._first_sibling, e)
-                    e = filter(s.match, e)
+                    e = list(map(s._first_sibling, e))
+                    e = list(filter(s.match, e))
             m.extend(e)
         return m
 
@@ -3084,7 +3084,7 @@ def base(url):
     """ Returns the URL domain name:
         http://en.wikipedia.org/wiki/Web_crawler => en.wikipedia.org
     """
-    return urlparse.urlparse(url).netloc
+    return urllib.parse.urlparse(url).netloc
 
 def abs(url, base=None):
     """ Returns the absolute URL:
@@ -3093,7 +3093,7 @@ def abs(url, base=None):
     if url.startswith("#") and not base is None and not base.endswith("/"):
         if not re.search("[^/]/[^/]", base):
             base += "/"
-    return urlparse.urljoin(base, url)
+    return urllib.parse.urljoin(base, url)
 
 DEPTH   = "depth"
 BREADTH = "breadth"
@@ -3121,7 +3121,7 @@ class Crawler(object):
         self.QUEUE    = 10000   # Increase or decrease according to available memory.
         self.sort     = sort
         # Queue given links in given order:
-        for link in (isinstance(links, basestring) and [links] or links):
+        for link in (isinstance(links, str) and [links] or links):
             self.push(link, priority=1.0, sort=FIFO)
 
     @property
@@ -3335,24 +3335,24 @@ class PDF(object):
 
         # The output will be ugly: it may be useful for mining but probably not for displaying.
         # You can also try PDF(data, format="html") to preserve some layout information.
-        from pdf.pdfinterp import PDFResourceManager, process_pdf
-        from pdf.converter import TextConverter, HTMLConverter
-        from pdf.layout    import LAParams
+        from .pdf.pdfinterp import PDFResourceManager, process_pdf
+        from .pdf.converter import TextConverter, HTMLConverter
+        from .pdf.layout    import LAParams
         s = ""
         m = PDFResourceManager()
         try:
             # Given data is a PDF file path.
-            data = os.path.exists(data) and open(data) or StringIO.StringIO(data)
+            data = os.path.exists(data) and open(data) or io.StringIO(data)
         except TypeError:
             # Given data is a PDF string.
-            data = StringIO.StringIO(data)
+            data = io.StringIO(data)
         try:
-            stream = StringIO.StringIO()
+            stream = io.StringIO()
             parser = format=="html" and HTMLConverter or TextConverter
             parser = parser(m, stream, codec="utf-8", laparams=LAParams())
             process_pdf(m, parser, data, set(), maxpages=0, password="")
-        except Exception, e:
-            raise PDFParseError, str(e)
+        except Exception as e:
+            raise PDFParseError(str(e))
         s = stream.getvalue()
         s = decode_utf8(s)
         s = s.strip()

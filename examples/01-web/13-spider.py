@@ -13,10 +13,10 @@ from pattern.web import Spider, DEPTH, BREADTH, FIFO, LIFO
 class SimpleSpider1(Spider):
     
     def visit(self, link, source=None):
-        print "visiting:", link.url, "from:", link.referrer
+        print("visiting:", link.url, "from:", link.referrer)
         
     def fail(self, link):
-        print "failed:", link.url
+        print("failed:", link.url)
 
 # Create a new spider.
 # 1) The links parameter is a list of URL's to visit.
@@ -28,7 +28,7 @@ class SimpleSpider1(Spider):
 
 spider1 = SimpleSpider1(links=["http://www.clips.ua.ac.be/pages/pattern/"], domains=["ua.ac.be"], delay=0.0)
 
-print "SPIDER 1 " + "-" * 50
+print("SPIDER 1 " + "-" * 50)
 while len(spider1.visited) < 5: # Spider.visited is a dictionary of all URL's visited so far.
     # The Spider.crawl() method has the same optional parameters as URL.download(),
     # for example: cached=True, proxy=("proxy.com", "https"), ...
@@ -42,11 +42,11 @@ while len(spider1.visited) < 5: # Spider.visited is a dictionary of all URL's vi
 
 spider2 = SimpleSpider1(links=["http://www.clips.ua.ac.be/pages/pattern/"], domains=["ua.ac.be"], delay=0.1)
 
-print
-print "SPIDER 2 " + "-" * 50
+print()
+print("SPIDER 2 " + "-" * 50)
 while True:
     spider2.crawl(cached=False)
-    print "wait..."
+    print("wait...")
     # Of course we don't want this example to run forever,
     # so we still add a stop condition:
     if len(spider2.visited) > 2:
@@ -62,15 +62,15 @@ while True:
 
 spider3 = SimpleSpider1(links=["http://www.clips.ua.ac.be/pages/pattern/"], delay=0.0)
 
-print
-print "SPIDER 3 " + "-" * 50
+print()
+print("SPIDER 3 " + "-" * 50)
 while len(spider3.visited) < 3:
     spider3.crawl(method=DEPTH)
     
 spider4 = SimpleSpider1(links=["http://www.clips.ua.ac.be/pages/pattern/"], delay=0.0)
 
-print
-print "SPIDER 4 " + "-" * 50
+print()
+print("SPIDER 4 " + "-" * 50)
 while len(spider4.visited) < 3:
     spider4.crawl(method=BREADTH)
 
@@ -82,8 +82,8 @@ while len(spider4.visited) < 3:
 
 spider5 = SimpleSpider1(links=["http://www.clips.ua.ac.be/pages/pattern/"], delay=0.1)
 
-print
-print "SPIDER 5 " + "-" * 50
+print()
+print("SPIDER 5 " + "-" * 50)
 while len(spider5.visited) < 4:
     spider5.crawl(method=DEPTH)
 
@@ -102,7 +102,7 @@ while len(spider5.visited) < 4:
 class SimpleSpider2(Spider):
     
     def visit(self, link, source=None):
-        print "visiting:", link.url, "from:", link.referrer
+        print("visiting:", link.url, "from:", link.referrer)
     
     def priority(self, link, method=DEPTH):
         if "?" in link.url:
@@ -119,8 +119,8 @@ class SimpleSpider2(Spider):
 # you'll notice that the last external link at the bottom of the page is now visited first.
 spider6 = SimpleSpider2(links=["http://www.clips.ua.ac.be/pages/pattern/"], delay=0.1, sort=LIFO)
 
-print
-print "SPIDER 6 " + "-" * 50
+print()
+print("SPIDER 6 " + "-" * 50)
 while len(spider6.visited) < 4:
     spider6.crawl(method=BREADTH)
 

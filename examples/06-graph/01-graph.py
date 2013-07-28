@@ -18,9 +18,9 @@ g.add_edge("insect", "ant")
 g.add_edge("ant", "tree")
 g.add_edge("ant", "bird")
 
-print g.shortest_path(g.node("tree"), g.node("fly"))
-print g.shortest_path(g.node("nest"), g.node("ant"))
-print
+print(g.shortest_path(g.node("tree"), g.node("fly")))
+print(g.shortest_path(g.node("nest"), g.node("ant")))
+print()
 
 # Which nodes get the most traffic?
-print g.sorted(order=CENTRALITY)
+print(g.sorted(order=CENTRALITY))

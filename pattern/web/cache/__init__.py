@@ -21,12 +21,12 @@ def decode_utf8(string):
             except:
                 pass
         return string
-    return unicode(string)
+    return str(string)
     
 def encode_utf8(string):
     """ Returns the given string as a Python byte string (if possible).
     """
-    if isinstance(string, unicode):
+    if isinstance(string, str):
         try: 
             return string.encode("utf-8")
         except:
@@ -96,18 +96,18 @@ class Cache(object):
         except OSError:
             pass
 
-    def get(self, k, unicode=True):
+    def get(self, k, str=True):
         """ Returns the data stored with the given id.
             With unicode=True, returns a Unicode string.
         """
         if k in self:
             f = open(self._hash(k), "rb"); v=f.read().lstrip(codecs.BOM_UTF8)
             f.close()
-            if unicode is True:
+            if str is True:
                 return decode_utf8(v)
             else:
                 return v
-        raise KeyError, k
+        raise KeyError(k)
 
     def age(self, k):
         """ Returns the age of the cached item, in days.

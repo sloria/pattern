@@ -74,7 +74,7 @@ def pluralize(word, pos=NOUN, custom={}):
         The custom dictionary is for user-defined replacements.
     """
 
-    if word in custom.keys():
+    if word in list(custom.keys()):
         return custom[word]
 
     w = word.lower()
@@ -83,7 +83,7 @@ def pluralize(word, pos=NOUN, custom={}):
         if w in plural_irregular_en:    # dag => dagen
             return w + "en"
         if w in plural_irregular_een:   # fee => feeën
-            return w + u"ën"
+            return w + "ën"
         if w in plural_irregular_eren:  # blad => bladeren
             return w + "eren"
         if w in plural_irregular_deren: # been => beenderen
@@ -109,12 +109,12 @@ def pluralize(word, pos=NOUN, custom={}):
         if w.endswith("ie"):
             return w + "s"
         if w.endswith(("ee","ie")):
-            return w[:-1] + u"ën"
+            return w[:-1] + "ën"
         # Words ending in -heid get -heden: mogelijkheid => mogelijkheden
         if w.endswith("heid"):
             return w[:-4] + "heden"
         # Words ending in -e -el -em -en -er -ie get -s: broer => broers.
-        if w.endswith((u"é", "e", "el", "em", "en", "er", "eu", "ie", "ue", "ui", "eau", "ah")):
+        if w.endswith(("é", "e", "el", "em", "en", "er", "eu", "ie", "ue", "ui", "eau", "ah")):
             return w + "s"
         # Words ending in a vowel get 's: auto => auto's.
         if w.endswith(VOWELS) or w.endswith("y") and not w.endswith("e"):
@@ -140,18 +140,18 @@ def pluralize(word, pos=NOUN, custom={}):
 
 #### SINGULARIZE ###################################################################################
 
-singular_irregular = dict((v,k) for k,v in plural_irregular.iteritems())
+singular_irregular = dict((v,k) for k,v in plural_irregular.items())
 
 def singularize(word, pos=NOUN, custom={}):
 
-    if word in custom.keys():
+    if word in list(custom.keys()):
         return custom[word]
 
     w = word.lower()
     
     if pos == NOUN and w in singular_irregular:
         return singular_irregular[w]
-    if pos == NOUN and w.endswith((u"ën", "en", "s", "i")):
+    if pos == NOUN and w.endswith(("ën", "en", "s", "i")):
         # auto's => auto
         if w.endswith("'s"):
             return w[:-2]
@@ -162,10 +162,10 @@ def singularize(word, pos=NOUN, custom={}):
         if w.endswith("ici"):
             return w[:-1] + "us"
         # feeën => fee
-        if w.endswith(u"ën") and w[:-2] in plural_irregular_een:
+        if w.endswith("ën") and w[:-2] in plural_irregular_een:
             return w[:-2]
         # bacteriën => bacterie
-        if w.endswith(u"ën"):
+        if w.endswith("ën"):
             return w[:-2] + "e"
         # mogelijkheden => mogelijkheid
         if w.endswith("heden"):
@@ -383,7 +383,7 @@ def attributive(adjective):
         w = w + w[-1]
     return w + "e"
 
-adjective_predicative = dict((v,k) for k,v in adjective_attributive.iteritems())
+adjective_predicative = dict((v,k) for k,v in adjective_attributive.items())
 adjective_predicative.update({
     "moe"      : "moe",
     "taboe"    : "taboe",

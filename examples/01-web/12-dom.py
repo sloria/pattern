@@ -23,9 +23,9 @@ dom = DOM(url.download(cached=True))
 #print dom.body.content
 for e in dom.get_elements_by_tagname("div.entry")[:5]: # Top 5 reddit entries.
     for a in e.get_elements_by_tagname("a.title")[:1]: # First <a class="title"> in entry.
-        print plaintext(a.content)
-        print a.attributes["href"]
-        print
+        print(plaintext(a.content))
+        print(a.attributes["href"])
+        print()
         
 # The links in the HTML source code may be relative,
 # e.g., "../img.jpg" instead of "www.domain.com/img.jpg".
@@ -74,12 +74,12 @@ dom = DOM(URL("http://www.clips.ua.ac.be").download())
 kw = dom.head.by_attribute(name="keywords")[0]
 kw = kw.attributes["content"]
 kw = [x.strip() for x in kw.split(",")]
-print kw
-print
+print(kw)
+print()
 
 # You can also use CSS selectors:
 # Element(selector) will return a list of nested elements that match the given string.
 dom = DOM(URL("http://www.clips.ua.ac.be").download())
 for e in dom("div#sidebar-left li div:first-child span"):
-    print plaintext(e.content)
-    print
+    print(plaintext(e.content))
+    print()

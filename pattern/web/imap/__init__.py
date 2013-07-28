@@ -41,12 +41,12 @@ def decode_utf8(string):
             except:
                 pass
         return string
-    return unicode(string)
+    return str(string)
     
 def encode_utf8(string):
     """ Returns the given string as a Python byte string (if possible).
     """
-    if isinstance(string, unicode):
+    if isinstance(string, str):
         try: 
             return string.encode("utf-8")
         except:
@@ -136,7 +136,7 @@ class Mail(object):
         except:
             raise MailLoginError
         if status != "OK":
-            raise MailLoginError, response
+            raise MailLoginError(response)
  
     def logout(self):
         """ Signs out of the mail account.
@@ -171,7 +171,7 @@ class Mail(object):
             return self.__dict__[k]
         if k in self.folders:
             return self.folders[k]
-        raise AttributeError, "'Mail' object has no attribute '%s'" % k
+        raise AttributeError("'Mail' object has no attribute '%s'" % k)
 
 #--- MAIL FOLDER -----------------------------------------------------------------------------------
 
@@ -264,7 +264,7 @@ class MailFolder:
             elif attachments:
                 d[ATTACHMENTS].append((p.get_content_type(), p.get_payload()))
         for k in d:
-            if isinstance(d[k], basestring):
+            if isinstance(d[k], str):
                 d[k] = d[k].strip()
                 d[k] = d[k].replace("\r\n", "\n")
         return d
@@ -272,7 +272,7 @@ class MailFolder:
     def __iter__(self):
         """ Returns an iterator over all the messages in the folder, latest-first.
         """
-        for i in reversed(range(len(self))):
+        for i in reversed(list(range(len(self)))):
             yield self[i]
 
     def __len__(self):

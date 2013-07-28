@@ -153,7 +153,7 @@ ABBREVIATIONS = set((
     "i.e.", "incl.", "ing.", "inkl.", "int.", "iur.", "lic.", "med.", "no.", "oec.", 
     "phil.", "phys.", "pp.", "psych.", "publ.", "rer.", "sc.", "soz.", "spez.", "stud.", 
     "theol.", "usw.", "vet.", "vgl.", "vol.", "wiss.",
-    "d.h.", "h.c.", u"o.ä.", "u.a.", "z.B.", "z.T.", "z.Zt."
+    "d.h.", "h.c.", "o.ä.", "u.a.", "z.B.", "z.T.", "z.Zt."
 ))
 
 def find_lemmata(tokens):
@@ -186,7 +186,7 @@ class Parser(_Parser):
             kwargs.setdefault("map", stts2penntreebank)
         # The lexicon uses Swiss spelling: "ss" instead of "ß".
         # We restore the "ß" after parsing.
-        tokens_ss = [t.replace(u"ß", "ss") for t in tokens]
+        tokens_ss = [t.replace("ß", "ss") for t in tokens]
         tokens_ss = _Parser.find_tags(self, tokens_ss, **kwargs)
         return [[w] + tokens_ss[i][1:] for i, w in enumerate(tokens)]
 

@@ -28,7 +28,7 @@ class TestInflection(unittest.TestCase):
                 i +=1
             n += 1
         self.assertTrue(float(i) / n > 0.74)
-        print "pattern.nl.pluralize()"
+        print("pattern.nl.pluralize()")
         
     def test_singularize(self):
         # Assert the accuracy of the singularization algorithm.
@@ -39,7 +39,7 @@ class TestInflection(unittest.TestCase):
                 i +=1
             n += 1
         self.assertTrue(float(i) / n > 0.88)
-        print "pattern.nl.singularize()"
+        print("pattern.nl.singularize()")
 
     def test_attributive(self):
         # Assert the accuracy of the attributive algorithm ("fel" => "felle").
@@ -50,7 +50,7 @@ class TestInflection(unittest.TestCase):
                 i +=1
             n += 1
         self.assertTrue(float(i) / n > 0.96)
-        print "pattern.nl.attributive()"
+        print("pattern.nl.attributive()")
         
     def test_predicative(self):
         # Assert the accuracy of the predicative algorithm ("felle" => "fel").
@@ -61,24 +61,24 @@ class TestInflection(unittest.TestCase):
                 i +=1
             n += 1
         self.assertTrue(float(i) / n > 0.96)
-        print "pattern.nl.predicative()"
+        print("pattern.nl.predicative()")
 
     def test_find_lemma(self):
         # Assert the accuracy of the verb lemmatization algorithm.
         # Note: the accuracy is higher (90%) when measured on CELEX word forms
         # (presumably because nl.inflect.verbs has high percentage irregular verbs).
         i, n = 0, 0
-        for v1, v2 in nl.inflect.verbs.inflections.items():
+        for v1, v2 in list(nl.inflect.verbs.inflections.items()):
             if nl.inflect.verbs.find_lemma(v1) == v2: 
                 i += 1
             n += 1
         self.assertTrue(float(i) / n > 0.83)
-        print "pattern.nl.inflect.verbs.find_lemma()"
+        print("pattern.nl.inflect.verbs.find_lemma()")
         
     def test_find_lexeme(self):
         # Assert the accuracy of the verb conjugation algorithm.
         i, n = 0, 0
-        for v, lexeme1 in nl.inflect.verbs.infinitives.items():
+        for v, lexeme1 in list(nl.inflect.verbs.infinitives.items()):
             lexeme2 = nl.inflect.verbs.find_lexeme(v)
             for j in range(len(lexeme2)):
                 if lexeme1[j] == lexeme2[j] or \
@@ -87,7 +87,7 @@ class TestInflection(unittest.TestCase):
                     i += 1
                 n += 1
         self.assertTrue(float(i) / n > 0.79)
-        print "pattern.nl.inflect.verbs.find_lexeme()"
+        print("pattern.nl.inflect.verbs.find_lexeme()")
 
     def test_conjugate(self):
         # Assert different tenses with different conjugations.
@@ -118,7 +118,7 @@ class TestInflection(unittest.TestCase):
           ("heeft", "gehad",    "ppart"),
           ("smsen", "smste",    "3sgp")):
             self.assertEqual(nl.conjugate(v1, tense), v2)
-        print "pattern.nl.conjugate()"
+        print("pattern.nl.conjugate()")
 
     def test_lexeme(self):
         # Assert all inflections of "zijn".
@@ -126,13 +126,13 @@ class TestInflection(unittest.TestCase):
         self.assertEqual(v, [
             "zijn", "ben", "bent", "is", "zijnd", "waren", "was", "geweest"
         ])
-        print "pattern.nl.inflect.lexeme()"
+        print("pattern.nl.inflect.lexeme()")
 
     def test_tenses(self):
         # Assert tense of "is".
         self.assertTrue((nl.PRESENT, 3, "sg") in nl.tenses("is"))
         self.assertTrue("3sg" in nl.tenses("is"))
-        print "pattern.nl.tenses()"
+        print("pattern.nl.tenses()")
 
 #---------------------------------------------------------------------------------------------------
 
@@ -174,7 +174,7 @@ class TestParser(unittest.TestCase):
           ("UH",   "Int"),
           ("SYM",  "Misc(symbool)")):
             self.assertEqual(nl.wotan2penntreebank(wotan), penntreebank)
-        print "pattern.nl.wotan2penntreebank()"
+        print("pattern.nl.wotan2penntreebank()")
         
     def test_find_lemmata(self):
         # Assert lemmata for nouns and verbs.
@@ -183,7 +183,7 @@ class TestParser(unittest.TestCase):
             ["katten", "NNS", "kat"], 
             ["droegen", "VBD", "dragen"], 
             ["hoeden", "NNS", "hoed"]])
-        print "pattern.nl.parser.find_lemmata()"
+        print("pattern.nl.parser.find_lemmata()")
     
     def test_parse(self):
         # Assert parsed output with Penn Treebank II tags (slash-formatted).
@@ -215,13 +215,13 @@ class TestParser(unittest.TestCase):
                     i += 1
                 n += 1
         self.assertTrue(float(i) / n > 0.90)
-        print "pattern.nl.parser.parse()"
+        print("pattern.nl.parser.parse()")
 
     def test_tag(self):
         # Assert [("zwarte", "JJ"), ("panters", "NNS")].
         v = nl.tag("zwarte panters")
         self.assertEqual(v, [("zwarte", "JJ"), ("panters", "NNS")])
-        print "pattern.nl.tag()"
+        print("pattern.nl.tag()")
     
     def test_command_line(self):
         # Assert parsed output from the command-line (example from the documentation).
@@ -231,7 +231,7 @@ class TestParser(unittest.TestCase):
         v = p.stdout.read()
         v = v.strip()
         self.assertEqual(v, "Leuke/JJ/B-NP/O/O/leuk kat/NN/I-NP/O/O/kat ././O/O/O/.")
-        print "python -m pattern.nl"
+        print("python -m pattern.nl")
 
 #---------------------------------------------------------------------------------------------------
 
@@ -258,7 +258,7 @@ class TestSentiment(unittest.TestCase):
         self.assertTrue(P > 0.790)
         self.assertTrue(R > 0.867)
         self.assertTrue(F > 0.827)
-        print "pattern.nl.sentiment()"
+        print("pattern.nl.sentiment()")
 
 #---------------------------------------------------------------------------------------------------
 

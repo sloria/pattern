@@ -22,9 +22,9 @@ q = "duracell bunny"
 results = engine.search(q, size=MEDIUM, sort=RELEVANCY, cached=False)
 for img in results:
     #print img.url # Retrieving the actual image URL executes a query.
-    print img.text
-    print img.author
-    print
+    print(img.text)
+    print(img.author)
+    print()
 
 # Download and save one of the images:
 img = results[0]
@@ -33,5 +33,5 @@ path = q.replace(" ","_") + extension(img.url)
 f = open(path, "wb")
 f.write(data)
 f.close()
-print "Download:", img.url
-print "Saved as:", path
+print("Download:", img.url)
+print("Saved as:", path)

@@ -65,9 +65,9 @@ sys.path.pop(0)
 # http://www.lexique.org/
 
 ABBREVIATIONS = set((
-    u"av.", u"boul.", u"C.-B.", u"c.-à-d.", u"ex.", u"éd.", u"fig.", u"I.-P.-E.", u"J.-C.", 
-    u"Ltee.", u"Ltée.", u"M.", u"Me.","Mlle.", u"Mlles.", u"MM.", u"N.-B.", u"N.-É.", u"p.", 
-    u"S.B.E.", u"Ste.", u"T.-N.", u"t.a.b."
+    "av.", "boul.", "C.-B.", "c.-à-d.", "ex.", "éd.", "fig.", "I.-P.-E.", "J.-C.", 
+    "Ltee.", "Ltée.", "M.", "Me.","Mlle.", "Mlles.", "MM.", "N.-B.", "N.-É.", "p.", 
+    "S.B.E.", "Ste.", "T.-N.", "t.a.b."
 ))
 
 # While contractions in English are optional, 
@@ -86,9 +86,9 @@ replacements = {
   "lorsqu'": "lorsqu' ",
   "puisqu'": "puisqu' ",
     # Same rule for Unicode apostrophe, see also Parser.find_tokens():
-    ur"(l|c|d|j|m|n|qu|s|t|jusqu|lorsqu|puisqu)’": u"\\1&rsquo; "
+    r"(l|c|d|j|m|n|qu|s|t|jusqu|lorsqu|puisqu)’": "\\1&rsquo; "
 }
-replacements.update(((k.upper(), v.upper()) for k, v in replacements.items()))
+replacements.update(((k.upper(), v.upper()) for k, v in list(replacements.items())))
 
 def find_lemmata(tokens):
     """ Annotates the tokens with lemmata for plural nouns and conjugated verbs,
@@ -98,7 +98,7 @@ def find_lemmata(tokens):
         word, pos, lemma = token[0], token[1], token[0]
         if pos.startswith(("DT", "PR", "WP")):
             lemma = singularize(word, pos=pos)
-        if pos.startswith(("RB", "IN")) and (word.endswith(("'", u"’")) or word == "du"):
+        if pos.startswith(("RB", "IN")) and (word.endswith(("'", "’")) or word == "du"):
             lemma = singularize(word, pos=pos)
         if pos.startswith(("JJ",)):
             lemma = predicative(word)
@@ -115,7 +115,7 @@ class Parser(_Parser):
         kwargs.setdefault("abbreviations", ABBREVIATIONS)
         kwargs.setdefault("replace", replacements)
         s = _Parser.find_tokens(self, tokens, **kwargs)
-        s = [s.replace("&rsquo ;", u"’") if isinstance(s, unicode) else s for s in s]
+        s = [s.replace("&rsquo ;", "’") if isinstance(s, str) else s for s in s]
         return s
 
     def find_lemmata(self, tokens, **kwargs):

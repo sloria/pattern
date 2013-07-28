@@ -30,8 +30,8 @@ except:
 CORPUS = ""
 os.environ["WNHOME"] = os.path.join(MODULE, CORPUS)
 
-from pywordnet import wordnet as wn
-from pywordnet import wntools
+from .pywordnet import wordnet as wn
+from .pywordnet import wntools
 
 # The bundled version of PyWordNet has custom fixes.
 # - line  365: check if lexnames exist.
@@ -67,13 +67,13 @@ def normalize(word):
     """ Normalizes the word for synsets() or Sentiwordnet[] by removing diacritics
         (PyWordNet does not take unicode).
     """
-    if not isinstance(word, basestring):
+    if not isinstance(word, str):
         word = str(word)
     if not isinstance(word, str):
         try: word = word.encode("utf-8", "ignore")
         except:
             pass
-    for k, v in DIACRITICS.items(): 
+    for k, v in list(DIACRITICS.items()): 
         for v in v: 
             word = word.replace(v, k)
     return word
@@ -103,7 +103,7 @@ def synsets(word, pos=NOUN):
         elif pos.startswith(ADVERB.lower()):
             w = wn.ADV[word]
         else:
-            raise TypeError, "part of speech must be NOUN, VERB, ADJECTIVE or ADVERB, not %s" % repr(pos)
+            raise TypeError("part of speech must be NOUN, VERB, ADJECTIVE or ADVERB, not %s" % repr(pos))
         return [Synset(s.synset) for i, s in enumerate(w)]
     except KeyError:
         return []
@@ -116,7 +116,7 @@ class Synset:
         """
         if isinstance(synset, int):
             synset = wn.getSynset({NN: "n", VB: "v", JJ: "adj", RB: "adv"}[pos], synset)
-        if isinstance(synset, basestring):
+        if isinstance(synset, str):
             synset = synsets(synset, pos)[0]._synset
         self._synset = synset
 
@@ -383,7 +383,7 @@ class SentiWordNet(Sentiment):
             glob.glob(os.path.join(MODULE, self.path)) + \
             glob.glob(os.path.join(MODULE, "..", self.path)))[0]
         except IndexError:
-            raise ImportError, "can't find SentiWordnet data file"
+            raise ImportError("can't find SentiWordnet data file")
         # Map synset id: a-00193480" => (193480, JJ).
         # Map synset id's to WordNet2 if VERSION == 2:
         if int(float(VERSION)) == 3:

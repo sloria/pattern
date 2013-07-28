@@ -35,7 +35,7 @@ class TestInflection(unittest.TestCase):
                     i +=1
                 n += 1
         self.assertTrue(float(i) / n > 0.69)
-        print "pattern.de.pluralize()"
+        print("pattern.de.pluralize()")
         
     def test_singularize(self):
         # Assert the accuracy of the singularization algorithm.
@@ -47,28 +47,28 @@ class TestInflection(unittest.TestCase):
                     i +=1
                 n += 1
         self.assertTrue(float(i) / n > 0.81)
-        print "pattern.de.singularize()"
+        print("pattern.de.singularize()")
 
     def test_attributive(self):
         # Assert "groß" => "großer" (masculine, nominative), and others.
         for lemma, inflected, gender, role, article in (
-          (u"groß", u"großer", de.MALE,    de.SUBJECT,  None),
-          (u"groß", u"großen", de.MALE,    de.OBJECT,   None),
-          (u"groß", u"großem", de.MALE,    de.INDIRECT, None),
-          (u"groß", u"großen", de.MALE,    de.PROPERTY, None),
-          (u"groß", u"große",  de.FEMALE,  de.SUBJECT,  None),
-          (u"groß", u"große",  de.FEMALE,  de.OBJECT,   None),
-          (u"groß", u"großer", de.FEMALE,  de.INDIRECT, None),
-          (u"groß", u"großes", de.NEUTRAL, de.SUBJECT,  None),
-          (u"groß", u"großes", de.NEUTRAL, de.OBJECT,   None),
-          (u"groß", u"großen", de.MALE,    de.PROPERTY, "mein"),
-          (u"groß", u"großen", de.FEMALE,  de.PROPERTY, "jeder"),
-          (u"groß", u"großen", de.FEMALE,  de.PROPERTY, "mein"),
-          (u"groß", u"großen", de.PLURAL,  de.INDIRECT, "jede"),
-          (u"groß", u"großen", de.PLURAL,  de.PROPERTY, "jeder")):
+          ("groß", "großer", de.MALE,    de.SUBJECT,  None),
+          ("groß", "großen", de.MALE,    de.OBJECT,   None),
+          ("groß", "großem", de.MALE,    de.INDIRECT, None),
+          ("groß", "großen", de.MALE,    de.PROPERTY, None),
+          ("groß", "große",  de.FEMALE,  de.SUBJECT,  None),
+          ("groß", "große",  de.FEMALE,  de.OBJECT,   None),
+          ("groß", "großer", de.FEMALE,  de.INDIRECT, None),
+          ("groß", "großes", de.NEUTRAL, de.SUBJECT,  None),
+          ("groß", "großes", de.NEUTRAL, de.OBJECT,   None),
+          ("groß", "großen", de.MALE,    de.PROPERTY, "mein"),
+          ("groß", "großen", de.FEMALE,  de.PROPERTY, "jeder"),
+          ("groß", "großen", de.FEMALE,  de.PROPERTY, "mein"),
+          ("groß", "großen", de.PLURAL,  de.INDIRECT, "jede"),
+          ("groß", "großen", de.PLURAL,  de.PROPERTY, "jeder")):
             v = de.attributive(lemma, gender, role, article)
             self.assertEqual(v, inflected)
-        print "pattern.de.attributive()"
+        print("pattern.de.attributive()")
         
     def test_predicative(self):
         # Assert the accuracy of the predicative algorithm ("großer" => "groß").
@@ -80,24 +80,24 @@ class TestInflection(unittest.TestCase):
                     i +=1
                 n += 1
         self.assertTrue(float(i) / n > 0.98)
-        print "pattern.de.predicative()"
+        print("pattern.de.predicative()")
 
     def test_find_lemma(self):
         # Assert the accuracy of the verb lemmatization algorithm.
         # Note: the accuracy is higher (88%) when measured on CELEX word forms
         # (presumably because de.inflect.verbs has high percentage irregular verbs).
         i, n = 0, 0
-        for v1, v2 in de.inflect.verbs.inflections.items():
+        for v1, v2 in list(de.inflect.verbs.inflections.items()):
             if de.inflect.verbs.find_lemma(v1) == v2: 
                 i += 1
             n += 1
         self.assertTrue(float(i) / n > 0.86)
-        print "pattern.de.inflect.verbs.find_lemma()"
+        print("pattern.de.inflect.verbs.find_lemma()")
         
     def test_find_lexeme(self):
         # Assert the accuracy of the verb conjugation algorithm.
         i, n = 0, 0
-        for v, lexeme1 in de.inflect.verbs.infinitives.items():
+        for v, lexeme1 in list(de.inflect.verbs.infinitives.items()):
             lexeme2 = de.inflect.verbs.find_lexeme(v)
             for j in range(len(lexeme2)):
                 if lexeme1[j] == "":
@@ -106,7 +106,7 @@ class TestInflection(unittest.TestCase):
                     i += 1
                 n += 1
         self.assertTrue(float(i) / n > 0.86)
-        print "pattern.de.inflect.verbs.find_lexeme()"
+        print("pattern.de.inflect.verbs.find_lexeme()")
 
     def test_conjugate(self):
         # Assert different tenses with different conjugations.
@@ -129,20 +129,20 @@ class TestInflection(unittest.TestCase):
           ("sein",  "sei",     (de.PRESENT, 2, de.SINGULAR, de.IMPERATIVE)),
           ("sein",  "seien",   (de.PRESENT, 1, de.PLURAL, de.IMPERATIVE)),
           ("sein",  "seid",    (de.PRESENT, 2, de.PLURAL, de.IMPERATIVE)),
-          ("sein", u"sei",     (de.PRESENT, 1, de.SINGULAR, de.SUBJUNCTIVE)),
-          ("sein", u"seiest",  (de.PRESENT, 2, de.SINGULAR, de.SUBJUNCTIVE)),
-          ("sein", u"sei",     (de.PRESENT, 3, de.SINGULAR, de.SUBJUNCTIVE)),
-          ("sein", u"seien",   (de.PRESENT, 1, de.PLURAL, de.SUBJUNCTIVE)),
-          ("sein", u"seiet",   (de.PRESENT, 2, de.PLURAL, de.SUBJUNCTIVE)),
-          ("sein", u"seien",   (de.PRESENT, 3, de.PLURAL, de.SUBJUNCTIVE)),
-          ("sein", u"wäre",    (de.PAST, 1, de.SINGULAR, de.SUBJUNCTIVE)),
-          ("sein", u"wärest",  (de.PAST, 2, de.SINGULAR, de.SUBJUNCTIVE)),
-          ("sein", u"wäre",    (de.PAST, 3, de.SINGULAR, de.SUBJUNCTIVE)),
-          ("sein", u"wären",   (de.PAST, 1, de.PLURAL, de.SUBJUNCTIVE)),
-          ("sein", u"wäret",   (de.PAST, 2, de.PLURAL, de.SUBJUNCTIVE)),
-          ("sein", u"wären",   (de.PAST, 3, de.PLURAL, de.SUBJUNCTIVE))):
+          ("sein", "sei",     (de.PRESENT, 1, de.SINGULAR, de.SUBJUNCTIVE)),
+          ("sein", "seiest",  (de.PRESENT, 2, de.SINGULAR, de.SUBJUNCTIVE)),
+          ("sein", "sei",     (de.PRESENT, 3, de.SINGULAR, de.SUBJUNCTIVE)),
+          ("sein", "seien",   (de.PRESENT, 1, de.PLURAL, de.SUBJUNCTIVE)),
+          ("sein", "seiet",   (de.PRESENT, 2, de.PLURAL, de.SUBJUNCTIVE)),
+          ("sein", "seien",   (de.PRESENT, 3, de.PLURAL, de.SUBJUNCTIVE)),
+          ("sein", "wäre",    (de.PAST, 1, de.SINGULAR, de.SUBJUNCTIVE)),
+          ("sein", "wärest",  (de.PAST, 2, de.SINGULAR, de.SUBJUNCTIVE)),
+          ("sein", "wäre",    (de.PAST, 3, de.SINGULAR, de.SUBJUNCTIVE)),
+          ("sein", "wären",   (de.PAST, 1, de.PLURAL, de.SUBJUNCTIVE)),
+          ("sein", "wäret",   (de.PAST, 2, de.PLURAL, de.SUBJUNCTIVE)),
+          ("sein", "wären",   (de.PAST, 3, de.PLURAL, de.SUBJUNCTIVE))):
             self.assertEqual(de.conjugate(v1, tense), v2)
-        print "pattern.de.conjugate()"
+        print("pattern.de.conjugate()")
 
     def test_lexeme(self):
         # Assert all inflections of "sein".
@@ -151,15 +151,15 @@ class TestInflection(unittest.TestCase):
             "sein", "bin", "bist", "ist", "sind", "seid", "seiend", 
             "war", "warst", "waren", "wart", "gewesen", 
             "sei", "seien", "seiest", "seiet", 
-            u"wäre", u"wärest", u"wären", u"wäret"
+            "wäre", "wärest", "wären", "wäret"
         ])
-        print "pattern.de.inflect.lexeme()"
+        print("pattern.de.inflect.lexeme()")
 
     def test_tenses(self):
         # Assert tense of "is".
         self.assertTrue((de.PRESENT, 3, de.SG) in de.tenses("ist"))
         self.assertTrue("2sg" in de.tenses("bist"))
-        print "pattern.de.tenses()"
+        print("pattern.de.tenses()")
 
 #---------------------------------------------------------------------------------------------------
 
@@ -170,38 +170,38 @@ class TestParser(unittest.TestCase):
         
     def test_find_lemmata(self):
         # Assert lemmata for nouns, adjectives and verbs.
-        v = de.parser.find_lemmata([["Ich", "PRP"], ["sage", "VB"], [u"schöne", "JJ"], [u"Dinge", "NNS"]])
+        v = de.parser.find_lemmata([["Ich", "PRP"], ["sage", "VB"], ["schöne", "JJ"], ["Dinge", "NNS"]])
         self.assertEqual(v, [
             ["Ich", "PRP", "ich"], 
             ["sage", "VB", "sagen"], 
-            [u"schöne", "JJ", u"schön"], 
+            ["schöne", "JJ", "schön"], 
             ["Dinge", "NNS", "ding"]])
-        print "pattern.de.parser.find_lemmata()"
+        print("pattern.de.parser.find_lemmata()")
     
     def test_parse(self):
         # Assert parsed output with Penn Treebank II tags (slash-formatted).
         # 1) "der große Hund" is a noun phrase, "auf der Matte" is a prepositional noun phrase.
-        v = de.parser.parse(u"Der große Hund sitzt auf der Matte.")
+        v = de.parser.parse("Der große Hund sitzt auf der Matte.")
         self.assertEqual(v,
-            u"Der/DT/B-NP/O große/JJ/I-NP/O Hund/NN/I-NP/O " + \
-            u"sitzt/VB/B-VP/O " + \
-            u"auf/IN/B-PP/B-PNP der/DT/B-NP/I-PNP Matte/NN/I-NP/I-PNP ././O/O"
+            "Der/DT/B-NP/O große/JJ/I-NP/O Hund/NN/I-NP/O " + \
+            "sitzt/VB/B-VP/O " + \
+            "auf/IN/B-PP/B-PNP der/DT/B-NP/I-PNP Matte/NN/I-NP/I-PNP ././O/O"
         )
         # 2) "große" and "sitzt" lemmata are "groß" and "sitzen".
         # Note how articles are problematic ("der" can be male subject but also plural possessive).
-        v = de.parser.parse(u"Der große Hund sitzt auf der Matte.", lemmata=True)
+        v = de.parser.parse("Der große Hund sitzt auf der Matte.", lemmata=True)
         self.assertEqual(v,
-            u"Der/DT/B-NP/O/der große/JJ/I-NP/O/groß Hund/NN/I-NP/O/hund " + \
-            u"sitzt/VB/B-VP/O/sitzen " + \
-            u"auf/IN/B-PP/B-PNP/auf der/DT/B-NP/I-PNP/der Matte/NN/I-NP/I-PNP/matte ././O/O/."
+            "Der/DT/B-NP/O/der große/JJ/I-NP/O/groß Hund/NN/I-NP/O/hund " + \
+            "sitzt/VB/B-VP/O/sitzen " + \
+            "auf/IN/B-PP/B-PNP/auf der/DT/B-NP/I-PNP/der Matte/NN/I-NP/I-PNP/matte ././O/O/."
         )
-        print "pattern.de.parser.parse()"
+        print("pattern.de.parser.parse()")
 
     def test_tag(self):
         # Assert [("der", "DT"), ("grosse", "JJ"), ("Hund", "NN")].
         v = de.tag("der grosse Hund")
         self.assertEqual(v, [("der", "DT"), ("grosse", "JJ"), ("Hund", "NN")])
-        print "pattern.de.tag()"
+        print("pattern.de.tag()")
     
     def test_command_line(self):
         # Assert parsed output from the command-line (example from the documentation).
@@ -211,7 +211,7 @@ class TestParser(unittest.TestCase):
         v = p.stdout.read()
         v = v.strip()
         self.assertEqual(v, "Der/DT/B-NP/O/O/der grosse/JJ/I-NP/O/O/gross Hund/NN/I-NP/O/O/hund ././O/O/O/.")
-        print "python -m pattern.de"
+        print("python -m pattern.de")
 
 #---------------------------------------------------------------------------------------------------
 

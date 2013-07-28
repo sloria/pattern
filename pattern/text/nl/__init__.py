@@ -79,7 +79,7 @@ def wotan2penntreebank(tag):
     """ Converts a WOTAN tag to Penn Treebank II tag.
         For example: bokkenrijders N(soort,mv,neut) => bokkenrijders/NNS
     """
-    for k, v in wotan.iteritems():
+    for k, v in wotan.items():
         if tag.startswith(k):
             for a, b in v:
                 if a in tag: 
@@ -131,7 +131,7 @@ class Sentiment(_Sentiment):
     
     def load(self):
         _Sentiment.load(self)
-        for w, pos in self.items():
+        for w, pos in list(self.items()):
             if "JJ" in pos:
                 # Map "verschrikkelijk" to adverbial "verschrikkelijke" (+1% accuracy)
                 self.setdefault(attributive(w), {"JJ": pos["JJ"], None: pos["JJ"]})

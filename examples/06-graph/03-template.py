@@ -51,4 +51,4 @@ g.add_edge("cat", "dog")
 #import cgitb; cgitb.enable() # Debug mode.
 #print "Content-type: text/html"
 
-print webpage(g, width=300, height=300)
+print(webpage(g, width=300, height=300))

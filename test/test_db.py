@@ -25,9 +25,9 @@ def create_db_mysql():
                 port = PORT,
             username = USERNAME,
             password = PASSWORD)
-    except ImportError, e: 
+    except ImportError as e: 
         DB_MYSQL_EXCEPTION = None # "No module named MySQLdb"
-    except Exception, e:
+    except Exception as e:
         DB_MYSQL_EXCEPTION = e
 
 def create_db_sqlite():
@@ -41,7 +41,7 @@ def create_db_sqlite():
                 port = PORT,
             username = USERNAME,
             password = PASSWORD)
-    except Exception, e:
+    except Exception as e:
         DB_SQLITE_EXCEPTION = e
 
 #---------------------------------------------------------------------------------------------------
@@ -51,31 +51,31 @@ class TestUnicode(unittest.TestCase):
     def setUp(self):
         # Test data with different (or wrong) encodings.
         self.strings = (
-            u"ünîcøde",
-            u"ünîcøde".encode("utf-16"),
-            u"ünîcøde".encode("latin-1"),
-            u"ünîcøde".encode("windows-1252"),
+            "ünîcøde",
+            "ünîcøde".encode("utf-16"),
+            "ünîcøde".encode("latin-1"),
+            "ünîcøde".encode("windows-1252"),
              "ünîcøde",
-            u"אוניקאָד"
+            "אוניקאָד"
         )
         
     def test_decode_utf8(self):
         # Assert unicode.
         for s in self.strings:
-            self.assertTrue(isinstance(db.decode_utf8(s), unicode))
-        print "pattern.db.decode_utf8()"
+            self.assertTrue(isinstance(db.decode_utf8(s), str))
+        print("pattern.db.decode_utf8()")
 
     def test_encode_utf8(self):
         # Assert Python bytestring.
         for s in self.strings:
             self.assertTrue(isinstance(db.encode_utf8(s), str))
-        print "pattern.db.encode_utf8()"
+        print("pattern.db.encode_utf8()")
         
     def test_string(self):
         # Assert string() with default for "" and None.
-        for v, s in ((True, u"True"), (1, u"1"), (1.0, u"1.0"), ("", u"????"), (None, u"????")):
+        for v, s in ((True, "True"), (1, "1"), (1.0, "1.0"), ("", "????"), (None, "????")):
             self.assertEqual(db.string(v, default="????"), s)
-        print "pattern.db.string()"
+        print("pattern.db.string()")
 
 #---------------------------------------------------------------------------------------------------
 
@@ -94,7 +94,7 @@ class TestEntities(unittest.TestCase):
           ('"', "&quot;"),
           ("'", "&#39;")):
             self.assertEqual(db.encode_entities(a), b)
-        print "pattern.db.encode_entities()"
+        print("pattern.db.encode_entities()")
             
     def test_decode_entities(self):
         # Assert HMTL entity decoder (e.g., "&amp;" => "&")
@@ -102,10 +102,10 @@ class TestEntities(unittest.TestCase):
           ("&#38;", "&"),
           ("&amp;", "&"),
           ("&#x0026;", "&"),
-          ("&#160;", u"\xa0"),
+          ("&#160;", "\xa0"),
           ("&foo;", "&foo;")):
             self.assertEqual(db.decode_entities(a), b)
-        print "pattern.db.decode_entities()"
+        print("pattern.db.decode_entities()")
 
 #---------------------------------------------------------------------------------------------------
 
@@ -141,13 +141,13 @@ class TestDate(unittest.TestCase):
         # Assert integer input.
         v1 = db.date(2010, 9, 21, format=db.DEFAULT_DATE_FORMAT)
         v2 = db.date(2010, 9, 21, 9, 27, 1, 0, db.DEFAULT_DATE_FORMAT)
-        v3 = db.date(2010, 9, 21, hour=9, minute=27, second=01, format=db.DEFAULT_DATE_FORMAT)
+        v3 = db.date(2010, 9, 21, hour=9, minute=27, second=0o1, format=db.DEFAULT_DATE_FORMAT)
         self.assertEqual(str(v1), "2010-09-21 00:00:00")
         self.assertEqual(str(v2), "2010-09-21 09:27:01")
         self.assertEqual(str(v3), "2010-09-21 09:27:01")
         # Assert DateError for other input.
         self.assertRaises(db.DateError, db.date, None)
-        print "pattern.db.date()"
+        print("pattern.db.date()")
             
     def test_format(self):
         # Assert custom input formats.
@@ -163,20 +163,20 @@ class TestDate(unittest.TestCase):
         v = db.date(1707, 4, 15)
         self.assertEqual(str(v), "1707-04-15 00:00:00")
         self.assertRaises(ValueError, lambda: v.timestamp)
-        print "pattern.db.Date.__str__()"
+        print("pattern.db.Date.__str__()")
 
     def test_timestamp(self):
         # Assert Date.timestamp.
         v = db.date(2010, 9, 21, format=db.DEFAULT_DATE_FORMAT)
         self.assertEqual(v.timestamp, 1285020000)
-        print "pattern.db.Date.timestamp"
+        print("pattern.db.Date.timestamp")
         
     def test_time(self):
         # Assert Date + time().
         v = db.date("2010-09-21 9:27:00")
         v = v - db.time(days=1, hours=1, minutes=1, seconds=1)
         self.assertEqual(str(v), "2010-09-20 08:25:59")
-        print "pattern.db.time()"
+        print("pattern.db.time()")
 
 #---------------------------------------------------------------------------------------------------
 
@@ -192,22 +192,22 @@ class TestUtilityFunctions(unittest.TestCase):
         self.assertEqual(db.order(v, reverse=True), [0,2,1])
         self.assertEqual(db.order(v, cmp=lambda a,b: a-b), [1,2,0])
         self.assertEqual(db.order(v, key=lambda i:i), [1,2,0])
-        print "pattern.db.order()"
+        print("pattern.db.order()")
 
     def test_avg(self):
         # Assert (1+2+3+4) / 4 = 2.5.
         self.assertEqual(db.avg([1,2,3,4]), 2.5)
-        print "pattern.db.avg()"
+        print("pattern.db.avg()")
         
     def test_variance(self):
         # Assert 2.5.
         self.assertEqual(db.variance([1,2,3,4,5]), 2.5)
-        print "pattern.db.variance()"
+        print("pattern.db.variance()")
         
     def test_stdev(self):
         # Assert 2.429.
         self.assertAlmostEqual(db.stdev([1,5,6,7,6,8]), 2.429, places=3)
-        print "pattern.db.stdev()"
+        print("pattern.db.stdev()")
     
     def test_sqlite_functions(self):
         # Assert year(), month(), day(), ..., first(), last() and group_concat() for SQLite.
@@ -227,15 +227,15 @@ class TestUtilityFunctions(unittest.TestCase):
             for x in a:
                 f.step(x)
             self.assertEqual(f.finalize(), b)
-        print "pattern.db.sqlite_year()"
-        print "pattern.db.sqlite_month()"
-        print "pattern.db.sqlite_day()"
-        print "pattern.db.sqlite_hour()"
-        print "pattern.db.sqlite_minute()"
-        print "pattern.db.sqlite_second()"
-        print "pattern.db.sqlite_first()"
-        print "pattern.db.sqlite_last()"
-        print "pattern.db.sqlite_group_concat()"
+        print("pattern.db.sqlite_year()")
+        print("pattern.db.sqlite_month()")
+        print("pattern.db.sqlite_day()")
+        print("pattern.db.sqlite_hour()")
+        print("pattern.db.sqlite_minute()")
+        print("pattern.db.sqlite_second()")
+        print("pattern.db.sqlite_first()")
+        print("pattern.db.sqlite_last()")
+        print("pattern.db.sqlite_group_concat()")
 
 #---------------------------------------------------------------------------------------------------
 
@@ -253,9 +253,9 @@ class TestDatabase(unittest.TestCase):
         # Assert str, unicode, int, long, float, bool and None field values.
         for v, s in (
           (  "a", "'a'"),
-          ( u"a", "'a'"),
+          ( "a", "'a'"),
           (    1, "1"),
-          (   1L, "1"),
+          (   1, "1"),
           (  1.0, "1.0"),
           ( True, "1"),
           (False, "0"),
@@ -276,7 +276,7 @@ class TestDatabase(unittest.TestCase):
             self.assertEqual(self.db.escape("'"), "'\\''")
         if self.db.type == db.SQLITE:
             self.assertEqual(self.db.escape("'"), "''''")
-        print "pattern.db._escape()"
+        print("pattern.db._escape()")
 
     def test_database(self):
         # Assert Database properties.
@@ -293,7 +293,7 @@ class TestDatabase(unittest.TestCase):
         self.assertTrue(self.db.connected  == False)
         self.assertTrue(self.db.connection == None)
         self.db.connect()
-        print "pattern.db.Database(type=%s)" % self.type.upper()
+        print("pattern.db.Database(type=%s)" % self.type.upper())
         
     def test_create_table(self):
         # Assert Database.create() new table.
@@ -335,7 +335,7 @@ class TestDatabase(unittest.TestCase):
         # Assert remove table.
         self.db.drop("products")
         self.assertTrue(len(self.db) == 0)
-        print "pattern.db.Database.create()"
+        print("pattern.db.Database.create()")
 
 class TestCreateMySQLDatabase(unittest.TestCase):
     def runTest(self):
@@ -409,7 +409,7 @@ class TestSchema(unittest.TestCase):
             self.assertEqual(db.field(**kwargs), f)
         # Assert primary_key() return value.
         self.assertTrue(db.primary_key() == db.pk() == ("id", "integer", None, "primary", False))
-        print "pattern.db.field()"
+        print("pattern.db.field()")
     
     def test_schema(self):
         now1 =  "current_timestamp"
@@ -439,7 +439,7 @@ class TestSchema(unittest.TestCase):
             self.assertEqual(s.index,    v[3])
             self.assertEqual(s.optional, v[4])
             self.assertEqual(s.length,   v[5])
-        print "pattern.db.Schema()"
+        print("pattern.db.Schema()")
 
 #---------------------------------------------------------------------------------------------------
 
@@ -479,7 +479,7 @@ class TestTable(unittest.TestCase):
         self.assertTrue(v.rows()      == [])
         self.assertTrue(v.schema["id"].type  == db.INTEGER)
         self.assertTrue(v.schema["id"].index == db.PRIMARY)
-        print "pattern.db.Table"
+        print("pattern.db.Table")
         
     def test_rename(self):
         # Assert ALTER TABLE when name changes.
@@ -487,18 +487,18 @@ class TestTable(unittest.TestCase):
         v.name = "clients"
         self.assertEqual(self.db.query, "alter table `persons` rename to `clients`;")
         self.assertEqual(self.db.tables.get("clients"), v)
-        print "pattern.db.Table.name"
+        print("pattern.db.Table.name")
         
     def test_fields(self):
         # Assert ALTER TABLE when column is inserted.
         v = self.db.products
         v.fields.append(db.field("description", db.TEXT))
         self.assertEqual(v.fields, ["id", "name", "price", "description"])
-        print "pattern.db.Table.fields"
+        print("pattern.db.Table.fields")
         
     def test_insert_update_delete(self):
         # Assert Table.insert().
-        v1 = self.db.persons.insert(name=u"Kurt Gödel")
+        v1 = self.db.persons.insert(name="Kurt Gödel")
         v2 = self.db.products.insert(name="pizza", price=10.0)
         v3 = self.db.products.insert({"name":"garlic bread", "price":3.0})
         v4 = self.db.orders.insert(person=v1, product=v3)
@@ -506,8 +506,8 @@ class TestTable(unittest.TestCase):
         self.assertEqual(v2, 1)
         self.assertEqual(v3, 2)
         self.assertEqual(v4, 1)
-        self.assertEqual(self.db.persons.rows(),  [(1, u"Kurt Gödel")])
-        self.assertEqual(self.db.products.rows(), [(1, u"pizza", 10.0), (2, u"garlic bread", 3.0)])
+        self.assertEqual(self.db.persons.rows(),  [(1, "Kurt Gödel")])
+        self.assertEqual(self.db.products.rows(), [(1, "pizza", 10.0), (2, "garlic bread", 3.0)])
         self.assertEqual(self.db.orders.rows(),   [(1, 1, 2)])
         self.assertEqual(self.db.orders.count(),  1)
         self.assertEqual(self.db.products.xml.replace(' extra="auto_increment"', ""),
@@ -534,29 +534,29 @@ class TestTable(unittest.TestCase):
         self.db.products.update(2, price=4.0)
         self.db.products.update(2, {"price":4.5})
         self.db.products.update(db.all(db.filter("name", "pi*")), name="deeppan pizza")
-        self.assertEqual(self.db.products.rows(), [(1, u"deeppan pizza", 10.0), (2, u"garlic bread", 4.5)])
+        self.assertEqual(self.db.products.rows(), [(1, "deeppan pizza", 10.0), (2, "garlic bread", 4.5)])
         # Assert Table.delete().
         self.db.products.delete(db.all(db.filter("name", "deeppan*")))
         self.db.products.delete(db.ALL)
         self.db.orders.delete(1)
         self.assertEqual(len(self.db.products), 0)
         self.assertEqual(len(self.db.orders), 1)
-        print "pattern.db.Table.insert()"
-        print "pattern.db.Table.update()"
-        print "pattern.db.Table.delete()"
+        print("pattern.db.Table.insert()")
+        print("pattern.db.Table.update()")
+        print("pattern.db.Table.delete()")
     
     def test_filter(self):
         # Assert Table.filter().
-        self.db.persons.insert(name=u"Kurt Gödel")
-        self.db.persons.insert(name=u"M. C. Escher")
-        self.db.persons.insert(name=u"Johann Sebastian Bach")
+        self.db.persons.insert(name="Kurt Gödel")
+        self.db.persons.insert(name="M. C. Escher")
+        self.db.persons.insert(name="Johann Sebastian Bach")
         f = self.db.persons.filter
-        self.assertEqual(f(("name",), id=1),        [(u"Kurt Gödel",)])
-        self.assertEqual(f(db.ALL, id=(1,2)),       [(1, u"Kurt Gödel"), (2, u"M. C. Escher")])
-        self.assertEqual(f({"id":(1,2)}),           [(1, u"Kurt Gödel"), (2, u"M. C. Escher")])
+        self.assertEqual(f(("name",), id=1),        [("Kurt Gödel",)])
+        self.assertEqual(f(db.ALL, id=(1,2)),       [(1, "Kurt Gödel"), (2, "M. C. Escher")])
+        self.assertEqual(f({"id":(1,2)}),           [(1, "Kurt Gödel"), (2, "M. C. Escher")])
         self.assertEqual(f("id", name="Johan*"),    [(3,)])
         self.assertEqual(f("id", name=("J*","K*")), [(1,), (3,)])
-        print "pattern.db.Table.filter()"
+        print("pattern.db.Table.filter()")
         
     def test_search(self):
         # Assert Table.search => Query object.
@@ -569,7 +569,7 @@ class TestTable(unittest.TestCase):
         v = self.db.persons.datasheet()
         self.assertTrue(isinstance(v, db.Datasheet))
         self.assertTrue(v.fields[0] == ("id", db.INTEGER))
-        print "pattern.db.Table.datasheet()"
+        print("pattern.db.Table.datasheet()")
         
 class TestMySQLTable(TestTable):
     def setUp(self):
@@ -626,39 +626,39 @@ class TestQuery(unittest.TestCase):
         # Assert absolute fieldname with SQL functions (e.g., avg(product.price)).
         for f in db.sql_functions.split("|"):
             self.assertEqual(db.abs("persons", "%s(name)" % f), "%s(persons.name)" % f)
-        print "pattern.db.abs()"
+        print("pattern.db.abs()")
         
     def test_cmp(self):
         # Assert WHERE-clause from cmp() function.
         q = self.db.persons.search(fields=["name"])
         self.assertTrue(isinstance(q, db.Query))
         for args, sql in (
-          (("name", u"Kurt%",    db.LIKE),    u"name like 'Kurt%'"),
-          (("name", u"Kurt*",    "="),        u"name like 'Kurt%'"),
-          (("name", u"*Gödel",   "=="),       u"name like '%Gödel'"),
-          (("name", u"Kurt*",    "!="),       u"name not like 'Kurt%'"),
-          (("name", u"Kurt*",    "<>"),       u"name not like 'Kurt%'"),
-          (("name", u"Gödel",    "i="),       u"name like 'Gödel'"),     # case-insensitive search
-          (("id",   (1, 2),      db.IN),      u"id in (1,2)"),
-          (("id",   (1, 2),      "="),        u"id in (1,2)"),
-          (("id",   (1, 2),      "=="),       u"id in (1,2)"),
-          (("id",   (1, 2),      "!="),       u"id not in (1,2)"),
-          (("id",   (1, 2),      "<>"),       u"id not in (1,2)"),
-          (("id",   (1, 3),      db.BETWEEN), u"id between 1 and 3"),
-          (("id",   (1, 3),      ":"),        u"id between 1 and 3"),
-          (("name", ("G","K*"),  "="),        u"(name='G' or name like 'K%')"),
-          (("name", None,        "="),        u"name is null"),
-          (("name", None,        "=="),       u"name is null"),
-          (("name", None,        "!="),       u"name is not null"),
-          (("name", None,        "<>"),       u"name is not null"),
-          (("name", q,           "="),        u"name in (select persons.name from `persons`)"),
-          (("name", q,           "=="),       u"name in (select persons.name from `persons`)"),
-          (("name", q,           "!="),       u"name not in (select persons.name from `persons`)"),
-          (("name", q,           "<>"),       u"name not in (select persons.name from `persons`)"),
-          (("name", u"Gödel",    "="),        u"name='Gödel'"),
-          (("id",   1,           ">"),        u"id>1")):
+          (("name", "Kurt%",    db.LIKE),    "name like 'Kurt%'"),
+          (("name", "Kurt*",    "="),        "name like 'Kurt%'"),
+          (("name", "*Gödel",   "=="),       "name like '%Gödel'"),
+          (("name", "Kurt*",    "!="),       "name not like 'Kurt%'"),
+          (("name", "Kurt*",    "<>"),       "name not like 'Kurt%'"),
+          (("name", "Gödel",    "i="),       "name like 'Gödel'"),     # case-insensitive search
+          (("id",   (1, 2),      db.IN),      "id in (1,2)"),
+          (("id",   (1, 2),      "="),        "id in (1,2)"),
+          (("id",   (1, 2),      "=="),       "id in (1,2)"),
+          (("id",   (1, 2),      "!="),       "id not in (1,2)"),
+          (("id",   (1, 2),      "<>"),       "id not in (1,2)"),
+          (("id",   (1, 3),      db.BETWEEN), "id between 1 and 3"),
+          (("id",   (1, 3),      ":"),        "id between 1 and 3"),
+          (("name", ("G","K*"),  "="),        "(name='G' or name like 'K%')"),
+          (("name", None,        "="),        "name is null"),
+          (("name", None,        "=="),       "name is null"),
+          (("name", None,        "!="),       "name is not null"),
+          (("name", None,        "<>"),       "name is not null"),
+          (("name", q,           "="),        "name in (select persons.name from `persons`)"),
+          (("name", q,           "=="),       "name in (select persons.name from `persons`)"),
+          (("name", q,           "!="),       "name not in (select persons.name from `persons`)"),
+          (("name", q,           "<>"),       "name not in (select persons.name from `persons`)"),
+          (("name", "Gödel",    "="),        "name='Gödel'"),
+          (("id",   1,           ">"),        "id>1")):
             self.assertEqual(db.cmp(*args), sql)
-        print "pattern.db.cmp()"
+        print("pattern.db.cmp()")
         
     def test_group(self):
         # Assert WHERE with AND/OR combinations from Group object().
@@ -674,57 +674,57 @@ class TestQuery(unittest.TestCase):
         self.assertEqual(g4.SQL(), "((name='garlic bread') or (name='pizza' and price<10)) and date>'%s'" % yesterday)
         # Assert subquery in group.
         q = self._query(fields=["name"])
-        g = db.any(("name", u"Gödel"), ("name", q))
-        self.assertEqual(g.SQL(), u"name='Gödel' or name in (select persons.name from `persons`)")
-        print "pattern.db.Group"
+        g = db.any(("name", "Gödel"), ("name", q))
+        self.assertEqual(g.SQL(), "name='Gödel' or name in (select persons.name from `persons`)")
+        print("pattern.db.Group")
         
     def test_query(self):
         # Assert table query results from Table.search().
         for kwargs, sql, rows in (
           (dict(fields=db.ALL),
             "select persons.* from `persons`;",
-            [(1, u"john", 30, 2), 
-             (2, u"jack", 20, 2), 
-             (3, u"jane", 30, 1)]),
+            [(1, "john", 30, 2), 
+             (2, "jack", 20, 2), 
+             (3, "jane", 30, 1)]),
           (dict(fields=db.ALL, range=(0, 2)),
             "select persons.* from `persons` limit 0, 2;",
-            [(1, u"john", 30, 2), 
-             (2, u"jack", 20, 2)]),
+            [(1, "john", 30, 2), 
+             (2, "jack", 20, 2)]),
           (dict(fields=db.ALL, filters=[("age", 30, "<")]),
             "select persons.* from `persons` where persons.age<30;",
-            [(2, u"jack", 20, 2)]),
+            [(2, "jack", 20, 2)]),
           (dict(fields=db.ALL, filters=db.any(("age", 30, "<"), ("name", "john"))),
             "select persons.* from `persons` where persons.age<30 or persons.name='john';",
-            [(1, u"john", 30, 2), 
-             (2, u"jack", 20, 2)]),
+            [(1, "john", 30, 2), 
+             (2, "jack", 20, 2)]),
           (dict(fields=["name", "gender.name"], relations=[db.relation("gender", "id", "gender")]),
             "select persons.name, gender.name from `persons` left join `gender` on persons.gender=gender.id;",
-            [(u"john", u"male"), 
-             (u"jack", u"male"), 
-             (u"jane", u"female")]),
+            [("john", "male"), 
+             ("jack", "male"), 
+             ("jane", "female")]),
           (dict(fields=["name","age"], sort="name"),
             "select persons.name, persons.age from `persons` order by persons.name asc;",
-            [(u"jack", 20), 
-             (u"jane", 30),
-             (u"john", 30)]),
+            [("jack", 20), 
+             ("jane", 30),
+             ("john", 30)]),
           (dict(fields=["name","age"], sort=1, order=db.DESCENDING),
             "select persons.name, persons.age from `persons` order by persons.name desc;",
-            [(u"john", 30),
-             (u"jane", 30),
-             (u"jack", 20)]),
+            [("john", 30),
+             ("jane", 30),
+             ("jack", 20)]),
           (dict(fields=["age","name"], sort=["age","name"], order=[db.ASCENDING, db.DESCENDING]),
             "select persons.age, persons.name from `persons` order by persons.age asc, persons.name desc;",
-            [(20, u"jack"),
-             (30, u"john"),
-             (30, u"jane")]),
+            [(20, "jack"),
+             (30, "john"),
+             (30, "jane")]),
           (dict(fields=["age","name"], group="age", function=db.CONCATENATE),
             "select persons.age, group_concat(persons.name) from `persons` group by persons.age;",
-            [(20, u"jack"), 
-             (30, u"john,jane")]),
+            [(20, "jack"), 
+             (30, "john,jane")]),
           (dict(fields=["id", "name","age"], group="age", function=[db.COUNT, db.CONCATENATE]),
             "select count(persons.id), group_concat(persons.name), persons.age from `persons` group by persons.age;",
-            [(1, u"jack", 20), 
-             (2, u"john,jane", 30)])):
+            [(1, "jack", 20), 
+             (2, "john,jane", 30)])):
             v = self.db.persons.search(**kwargs)
             v.xml
             self.assertEqual(v.SQL(), sql)
@@ -736,11 +736,11 @@ class TestQuery(unittest.TestCase):
         self.assertEqual(v.SQL(), 
             "select persons.name, gender.name as gender from `persons` left join `gender` on persons.gender=gender.id;")
         self.assertEqual(v.rows(),
-            [(u'john', u'male'), 
-             (u'jack', u'male'), 
-             (u'jane', u'female')])
-        print "pattern.db.Table.search()"
-        print "pattern.db.Table.Query"
+            [('john', 'male'), 
+             ('jack', 'male'), 
+             ('jane', 'female')])
+        print("pattern.db.Table.search()")
+        print("pattern.db.Table.Query")
              
     def test_xml(self):
         # Assert Query.xml dump.
@@ -767,7 +767,7 @@ class TestQuery(unittest.TestCase):
         self.assertTrue("persons2" in self.db)
         self.assertTrue(self.db.persons2.fields == ["name", "gender"])
         self.assertTrue(len(self.db.persons2)   == 3)
-        print "pattern.db.Query.xml"
+        print("pattern.db.Query.xml")
 
 
 class TestMySQLQuery(TestQuery):
@@ -822,7 +822,7 @@ class TestView(unittest.TestCase):
             "</tr>"
             "</table>"
         )
-        print "pattern.db.View"
+        print("pattern.db.View")
 
 class TestMySQLView(TestView):
     def setUp(self):
@@ -842,8 +842,8 @@ class TestCSV(unittest.TestCase):
         # Create test table.
         self.csv = db.CSV(
             rows=[
-                [u"Schrödinger", "cat", True, 3, db.date(2009, 11, 3)],
-                [u"Hofstadter", "labrador", True, 5, db.date(2007, 8, 4)]
+                ["Schrödinger", "cat", True, 3, db.date(2009, 11, 3)],
+                ["Hofstadter", "labrador", True, 5, db.date(2007, 8, 4)]
             ],
             fields=[
                 ["name", db.STRING],
@@ -859,8 +859,8 @@ class TestCSV(unittest.TestCase):
         v2 = db.csv_header_decode("age (INTEGER)")
         self.assertEqual(v1, "age (INTEGER)")
         self.assertEqual(v2, ("age", db.INTEGER))
-        print "pattern.db.csv_header_encode()"
-        print "pattern.db.csv_header_decode()"
+        print("pattern.db.csv_header_encode()")
+        print("pattern.db.csv_header_decode()")
         
     def test_csv(self):
         # Assert saving and loading data (field types are preserved).
@@ -868,12 +868,12 @@ class TestCSV(unittest.TestCase):
         v.save("test.csv", headers=True)
         v = db.CSV.load("test.csv", headers=True)
         self.assertTrue(isinstance(v, list))
-        self.assertTrue(v.headers[0] == (u"name", db.STRING))
-        self.assertTrue(v[0] == [u"Schrödinger", "cat", True, 3, db.date(2009, 11, 3)])
+        self.assertTrue(v.headers[0] == ("name", db.STRING))
+        self.assertTrue(v[0] == ["Schrödinger", "cat", True, 3, db.date(2009, 11, 3)])
         os.unlink("test.csv")
-        print "pattern.db.CSV"
-        print "pattern.db.CSV.save()"
-        print "pattern.db.CSV.load()"
+        print("pattern.db.CSV")
+        print("pattern.db.CSV.save()")
+        print("pattern.db.CSV.load()")
         
     def test_file(self):
         # Assert CSV file contents.
@@ -883,9 +883,9 @@ class TestCSV(unittest.TestCase):
         v = db.decode_utf8(v.lstrip(codecs.BOM_UTF8))
         v = v.replace("\r\n", "\n")
         self.assertEqual(v, 
-            u'"name (STRING)","type (STRING)","tail (BOOLEAN)","age (INTEGER)","date (DATE)"\n'
-            u'"Schrödinger","cat","True","3","2009-11-03 00:00:00"\n'
-            u'"Hofstadter","labrador","True","5","2007-08-04 00:00:00"'
+            '"name (STRING)","type (STRING)","tail (BOOLEAN)","age (INTEGER)","date (DATE)"\n'
+            '"Schrödinger","cat","True","3","2009-11-03 00:00:00"\n'
+            '"Hofstadter","labrador","True","5","2007-08-04 00:00:00"'
         )
         os.unlink("test.csv")
 
@@ -915,7 +915,7 @@ class TestDatasheet(unittest.TestCase):
         # Assert default for new rows with missing columns.
         v.rows.extend([[7],[9]], default=0)
         self.assertEqual(v.rows, [[3,4],[0,0],[5,6],[7,0],[9,0]])
-        print "pattern.db.Datasheet.rows"
+        print("pattern.db.Datasheet.rows")
         
     def test_columns(self):
         # Assert Datasheet.columns DatasheetColumns object.
@@ -936,7 +936,7 @@ class TestDatasheet(unittest.TestCase):
         # Assert default for new columns with missing rows.
         v.columns.extend([[7],[9]], default=0)
         self.assertEqual(v.columns, [[3,4],[0,0],[5,6],[7,0],[9,0]])
-        print "pattern.db.Datasheet.columns"
+        print("pattern.db.Datasheet.columns")
         
     def test_column(self):
         # Assert DatasheetColumn object.
@@ -947,11 +947,11 @@ class TestDatasheet(unittest.TestCase):
         self.assertEqual(v, [[1,3], [0,None], [2,4]])
         del v.columns[0]
         self.assertTrue(column._datasheet, None)
-        print "pattern.db.DatasheetColumn"
+        print("pattern.db.DatasheetColumn")
     
     def test_fields(self):
         # Assert Datasheet with incomplete headers.
-        v = db.Datasheet(rows=[[u"Schrödinger", "cat"]], fields=[("name", db.STRING)])
+        v = db.Datasheet(rows=[["Schrödinger", "cat"]], fields=[("name", db.STRING)])
         self.assertEqual(v.fields, [("name", db.STRING)])
         # Assert (None, None) for missing headers.
         v.columns.swap(0,1)
@@ -966,8 +966,8 @@ class TestDatasheet(unittest.TestCase):
         v.columns.append([3], field=("age", db.INTEGER))
         self.assertEqual(v.fields, [("name", db.STRING), (None, None), ("age", db.INTEGER)])
         # Assert column by name.
-        self.assertEqual(v.name, [u"Schrödinger"])
-        print "pattern.db.Datasheet.fields"
+        self.assertEqual(v.name, ["Schrödinger"])
+        print("pattern.db.Datasheet.fields")
     
     def test_group(self):
         # Assert Datasheet.group().
@@ -978,9 +978,9 @@ class TestDatasheet(unittest.TestCase):
         v5 = v1.group(0, function=db.CONCATENATE, key=lambda j: j>0)
         self.assertEqual(v2, [[1,2,"a"], [0,0,"d"]])
         self.assertEqual(v3, [[1,4,"c"], [0,0,"d"]])
-        self.assertEqual(v4, [[1,3,u"a,b,c"], [0,1,u"d"]])
-        self.assertEqual(v5, [[True,u"2,3,4",u"a,b,c"], [False,u"0",u"d"]])
-        print "pattern.db.Datasheet.group()"
+        self.assertEqual(v4, [[1,3,"a,b,c"], [0,1,"d"]])
+        self.assertEqual(v5, [[True,"2,3,4","a,b,c"], [False,"0","d"]])
+        print("pattern.db.Datasheet.group()")
         
     def test_slice(self):
         # Assert Datasheet slices.
@@ -996,7 +996,7 @@ class TestDatasheet(unittest.TestCase):
         # Assert new Datasheet for i:j slices.
         self.assertTrue(isinstance(v[0:2],     db.Datasheet))
         self.assertTrue(isinstance(v[0:2,0:2], db.Datasheet))
-        print "pattern.db.Datasheet.slice()"
+        print("pattern.db.Datasheet.slice()")
         
     def test_copy(self):
         # Assert Datasheet.copy().
@@ -1005,31 +1005,31 @@ class TestDatasheet(unittest.TestCase):
         self.assertTrue(v.copy(rows=[0]), [[1,2,3]])
         self.assertTrue(v.copy(rows=[0], columns=[0]), [[1]])
         self.assertTrue(v.copy(columns=[0]), [[1], [4], [7]])
-        print "pattern.db.Datasheet.copy()"
+        print("pattern.db.Datasheet.copy()")
         
     def test_map(self):
         # Assert Datasheet.map() (in-place).
         v = db.Datasheet(rows=[[1,2],[3,4]])
         v.map(lambda x: x+1)
         self.assertEqual(v, [[2,3],[4,5]])
-        print "pattern.db.Datasheet.map()"
+        print("pattern.db.Datasheet.map()")
         
     def test_json(self):
         # Assert JSON output.
-        v = db.Datasheet(rows=[[u"Schrödinger", 3], [u"Hofstadter", 5]])
-        self.assertEqual(v.json, u'[["Schrödinger", 3], ["Hofstadter", 5]]')
+        v = db.Datasheet(rows=[["Schrödinger", 3], ["Hofstadter", 5]])
+        self.assertEqual(v.json, '[["Schrödinger", 3], ["Hofstadter", 5]]')
         # Assert JSON output with headers.
-        v = db.Datasheet(rows=[[u"Schrödinger", 3], [u"Hofstadter",  5]], 
+        v = db.Datasheet(rows=[["Schrödinger", 3], ["Hofstadter",  5]], 
                        fields=[("name", db.STRING), ("age", db.INT)])
         random.seed(0)
-        self.assertEqual(v.json, u'[{"age": 3, "name": "Schrödinger"}, {"age": 5, "name": "Hofstadter"}]')
-        print "pattern.db.Datasheet.json"
+        self.assertEqual(v.json, '[{"age": 3, "name": "Schrödinger"}, {"age": 5, "name": "Hofstadter"}]')
+        print("pattern.db.Datasheet.json")
         
     def test_flip(self):
         # Assert flip matrix.
         v = db.flip(db.Datasheet([[1,2], [3,4]]))
         self.assertEqual(v, [[1,3], [2,4]])
-        print "pattern.db.flip()"
+        print("pattern.db.flip()")
         
     def test_truncate(self):
         # Assert string truncate().
@@ -1039,7 +1039,7 @@ class TestDatasheet(unittest.TestCase):
         self.assertEqual(db.truncate(v1), (v1, ""))
         self.assertEqual(db.truncate(v2), ("a"*99+"-", "a"*51))
         self.assertEqual(db.truncate(v3), (("aaa "*25).strip(), "aaa "*25))
-        print "pattern.db.truncate()"
+        print("pattern.db.truncate()")
         
     def test_pprint(self):
         pass

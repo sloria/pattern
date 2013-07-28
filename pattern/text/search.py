@@ -112,7 +112,7 @@ def combinations(list, n):
     """
     if n == 0: yield [] # Only one possibility, the empty list.
     else:
-        for i in xrange(len(list)):
+        for i in range(len(list)):
             for c in combinations(list, n-1):
                 yield [list[i]] + c
 
@@ -165,14 +165,15 @@ class odict(dict):
         if k not in self: self._o.insert(0,k) # Sort newest-first with reversed=True.
     def _appendkey(self, k):
         if k not in self: self._o.append(k)   # Sort oldest-first with reversed=False.
-    def append(self, (k, v)):
+    def append(self, xxx_todo_changeme):
         """ Takes a (key, value)-tuple. Sets the given key to the given value.
             If the key exists, pushes the updated item to the head (or tail) of the dict.
         """
+        (k, v) = xxx_todo_changeme
         if k in self: self.__delitem__(k)
         self.__setitem__(k,v)
     def update(self, d):
-        for k,v in d.items(): self.__setitem__(k,v)
+        for k,v in list(d.items()): self.__setitem__(k,v)
     def setdefault(self, k, v=None):
         if not k in self: self.__setitem__(k,v)
         return self[k]        
@@ -187,17 +188,17 @@ class odict(dict):
     def keys(self): 
         return self._o
     def values(self):
-        return map(self.get, self._o)
+        return list(map(self.get, self._o))
     def items(self): 
-        return zip(self._o, self.values())
+        return list(zip(self._o, list(self.values())))
     def __iter__(self):
         return self._o.__iter__()
     def copy(self):
         d = self.__class__(reversed=self.reversed)
-        for k,v in (self.reversed and reversed(self.items()) or self.items()): d[k] = v
+        for k,v in (self.reversed and reversed(list(self.items())) or list(self.items())): d[k] = v
         return d
     def __repr__(self):
-        return "{%s}" % ", ".join(["%s: %s" % (repr(k), repr(v)) for k, v in self.items()])
+        return "{%s}" % ", ".join(["%s: %s" % (repr(k), repr(v)) for k, v in list(self.items())])
 
 #--- TAXONOMY --------------------------------------------------------------------------------------
 
@@ -252,7 +253,7 @@ class Taxonomy(dict):
         """
         term = self._normalize(term)
         if dict.__contains__(self, term):
-            return self[term][0].keys()[-1]
+            return list(self[term][0].keys())[-1]
         # If the term is not in the dictionary, check the classifiers.
         # Returns the first term in the list returned by a classifier.
         for classifier in self.classifiers:
@@ -271,7 +272,7 @@ class Taxonomy(dict):
                 return []
             visited[term], a = True, []
             if dict.__contains__(self, term):
-                a = self[term][0].keys()
+                a = list(self[term][0].keys())
             for classifier in self.classifiers:
                 a.extend(classifier.parents(term, **kwargs) or [])
             if recursive:
@@ -288,7 +289,7 @@ class Taxonomy(dict):
                 return []
             visited[term], a = True, []
             if dict.__contains__(self, term):
-                a = self[term][1].keys()
+                a = list(self[term][1].keys())
             for classifier in self.classifiers:
                 a.extend(classifier.children(term, **kwargs) or [])
             if recursive:
@@ -349,7 +350,7 @@ class WordNetClassifier(Classifier):
     
     def __init__(self, wordnet=None):
         if wordnet is None:
-            try: from en import wordnet
+            try: from .en import wordnet
             except:
                 pass
         Classifier.__init__(self, self._parents, self._children)
@@ -706,8 +707,8 @@ class Pattern:
         """ Returns the first match found in the given sentence, or None.
         """
         if sentence.__class__.__name__ == "Text":
-            return find(lambda (m,s): m!=None, ((self.match(s, start, _v), s) for s in sentence))[0]
-        if isinstance(sentence, basestring):
+            return find(lambda m_s: m_s[0]!=None, ((self.match(s, start, _v), s) for s in sentence))[0]
+        if isinstance(sentence, str):
             sentence = Sentence(sentence)
         # Variations (_v) further down the list may match words more to the front.
         # We need to check all of them. Unmatched variations are blacklisted (_u).
@@ -821,7 +822,7 @@ def compile(pattern, *args, **kwargs):
     id, p = repr(pattern)+repr(args), None
     if id in _cache:
         return _cache[id]
-    if isinstance(pattern, basestring):
+    if isinstance(pattern, str):
         p = Pattern.fromstring(pattern, *args, **kwargs)
     if isinstance(pattern, regexp):
         p = Pattern([Constraint(words=[pattern], taxonomy=kwargs.get("taxonomy", TAXONOMY))], *args, **kwargs)
@@ -831,7 +832,7 @@ def compile(pattern, *args, **kwargs):
         _cache[id] = p
         return p
     else:
-        raise TypeError, "can't compile '%s' object" % pattern.__class__.__name__
+        raise TypeError("can't compile '%s' object" % pattern.__class__.__name__)
 
 def match(pattern, sentence, *args, **kwargs):
     """ Returns the first match found in the given sentence, or None.
@@ -865,9 +866,9 @@ class Match:
         self._map2 = dict() # Constraint index to list of Word indices.
         for w in self.words:
             self._map1[w.index] = map[w.index]
-        for k,v in self._map1.items():
+        for k,v in list(self._map1.items()):
             self._map2.setdefault(self.pattern.sequence.index(v),[]).append(k)
-        for k,v in self._map2.items():
+        for k,v in list(self._map2.items()):
             v.sort()
 
     def __len__(self):
@@ -937,7 +938,7 @@ class Match:
             search("{JJ JJ} NN", Sentence(parse("big black cat"))).group(1) => big black.
         """
         if index < 0 or index > len(self.pattern.groups):
-            raise IndexError, "no such group"
+            raise IndexError("no such group")
         if index > 0 and index <= len(self.pattern.groups):
             g = self.pattern.groups[index-1]
         if index == 0:

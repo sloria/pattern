@@ -18,12 +18,12 @@ for s in (
   "my cat is black and your cat is white"): # NN + NN  
     t = parsetree(s)
     m = search("DT? RB? JJ? NN+", t)
-    print
-    print t
-    print m
+    print()
+    print(t)
+    print(m)
     if m:
         for w in m[0].words:
-            print w, "matches", m[0].constraint(w)
+            print(w, "matches", m[0].constraint(w))
 
 # Before version 2.4, "( )" was used instead of "?".
 # For example: "(JJ)" instead of "JJ?".

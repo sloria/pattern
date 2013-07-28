@@ -12,22 +12,22 @@ from pattern.en import sentiment, polarity, subjectivity, positive
 # subjectivity() measures objective vs. subjective, as a number between 0.0 and 1.0.
 # sentiment() returns a tuple of (polarity, subjectivity) for a given string.
 for word in ("amazing", "horrible", "public"):
-    print word, sentiment(word)
+    print(word, sentiment(word))
 
-print
-print sentiment(
+print()
+print(sentiment(
     "The movie attempts to be surreal by incorporating time travel and various time paradoxes,"
-    "but it's presented in such a ridiculous way it's seriously boring.") 
+    "but it's presented in such a ridiculous way it's seriously boring.")) 
 
 # The input string can also be a Synset, or a parsed Sentence, Text, Chunk or Word.
 
 # positive() returns True if the string's polarity >= threshold.
 # The threshold can be lowered or raised, 
 # but overall for strings with multiple words +0.1 yields the best results.
-print
-print "good:", positive("good", threshold=0.1)
-print " bad:", positive("bad")
-print
+print()
+print("good:", positive("good", threshold=0.1))
+print(" bad:", positive("bad"))
+print()
 
 # You can also do sentiment analysis in Dutch, it works exactly the same:
 

@@ -41,7 +41,7 @@ for s in (
   "To be, or not to be."):
     s = parse(s)
     s = Sentence(s)
-    print s
-    print imperative(s)
-    print 
+    print(s)
+    print(imperative(s))
+    print() 
 

@@ -66,13 +66,13 @@ def deepcopy(o):
         return o
     if hasattr(o, "copy"):
         return o.copy()
-    if isinstance(o, (basestring, bool, int, float, long, complex)):
+    if isinstance(o, (str, bool, int, float, complex)):
         return o
     if isinstance(o, (list, tuple, set)):
         return o.__class__(deepcopy(v) for v in o)
     if isinstance(o, dict):
-        return dict((deepcopy(k), deepcopy(v)) for k,v in o.iteritems())
-    raise Exception, "don't know how to copy %s" % o.__class__.__name__
+        return dict((deepcopy(k), deepcopy(v)) for k,v in o.items())
+    raise Exception("don't know how to copy %s" % o.__class__.__name__)
 
 class Node(object):
     
@@ -93,7 +93,7 @@ class Node(object):
         self.stroke      = kwargs.pop("stroke", (0,0,0,1))
         self.strokewidth = kwargs.pop("strokewidth", 1)
         self.text        = kwargs.get("text", True) and \
-            Text(isinstance(id, unicode) and id or str(id).decode("utf-8", "ignore"), 
+            Text(isinstance(id, str) and id or str(id).decode("utf-8", "ignore"), 
                    width = 85,
                     fill = kwargs.pop("text", (0,0,0,1)), 
                 fontsize = kwargs.pop("fontsize", 11), **kwargs) or None
@@ -157,7 +157,7 @@ class Node(object):
                 if n.id not in _visited or _visited[n.id][1] < depth-1:
                     if traversable(self, self.links.edges[n.id]):
                         n.flatten(depth-1, traversable, _visited)
-        return [n for n,d in _visited.values()] # Fast, but not order-preserving.
+        return [n for n,d in list(_visited.values())] # Fast, but not order-preserving.
     
     def draw(self, weighted=False):
         """ Draws the node as a circle with the given radius, fill, stroke and strokewidth.
@@ -334,7 +334,7 @@ class Graph(dict):
         try: 
             return dict.__getitem__(self, id)
         except KeyError:
-            raise KeyError, "no node with id '%s' in graph" % id
+            raise KeyError("no node with id '%s' in graph" % id)
     
     def append(self, base, *args, **kwargs):
         """ Appends a Node or Edge to the graph: Graph.append(Node, id="rabbit").
@@ -447,7 +447,7 @@ class Graph(dict):
         if not isinstance(node, Node): 
             node = self[node]
         p = nodedict(self)
-        for id, path in dijkstra_shortest_paths(self, node.id, heuristic, directed).iteritems():
+        for id, path in dijkstra_shortest_paths(self, node.id, heuristic, directed).items():
             p[self[id]] = path and [self[id] for id in path] or None
         return p 
             
@@ -457,8 +457,8 @@ class Graph(dict):
             Node.weight is higher for nodes with a lot of (indirect) incoming traffic.
         """
         ec = eigenvector_centrality(self, normalized, reversed, rating, iterations, tolerance)
-        ec = nodedict(self, ((self[id], w) for id, w in ec.iteritems()))
-        for n, w in ec.iteritems(): 
+        ec = nodedict(self, ((self[id], w) for id, w in ec.items()))
+        for n, w in ec.items(): 
             n._weight = w
         return ec
             
@@ -468,8 +468,8 @@ class Graph(dict):
             Node.centrality is higher for nodes with a lot of passing traffic.
         """
         bc = brandes_betweenness_centrality(self, normalized, directed)
-        bc = nodedict(self, ((self[id], w) for id, w in bc.iteritems()))
-        for n, w in bc.iteritems(): 
+        bc = nodedict(self, ((self[id], w) for id, w in bc.items()))
+        for n, w in bc.items(): 
             n._centrality = w
         return bc
         
@@ -546,7 +546,7 @@ class Graph(dict):
         except TypeError:
             new = self.add_node(n.id, root=kwargs.get("root",False))
         new.__class__ = n.__class__
-        new.__dict__.update((k, deepcopy(v)) for k,v in n.__dict__.iteritems() 
+        new.__dict__.update((k, deepcopy(v)) for k,v in n.__dict__.items() 
             if k not in ("graph", "links", "_x", "_y", "force", "_weight", "_centrality"))
     
     def _add_edge_copy(self, e, **kwargs):
@@ -557,7 +557,7 @@ class Graph(dict):
             kwargs.get("node1", self[e.node1.id]), 
             kwargs.get("node2", self[e.node2.id]))
         new.__class__ = e.__class__
-        new.__dict__.update((k, deepcopy(v)) for k,v in e.__dict__.iteritems()
+        new.__dict__.update((k, deepcopy(v)) for k,v in e.__dict__.items()
             if k not in ("node1", "node2"))
     
     def copy(self, nodes=ALL):
@@ -762,7 +762,7 @@ def adjacency(graph, directed=False, reversed=False, stochastic=False, heuristic
     # Bound method objects are transient, 
     # i.e., id(object.method) returns a new value each time.
     if graph._adjacency is not None and \
-       graph._adjacency[1:] == (directed, reversed, stochastic, heuristic and heuristic.func_code):
+       graph._adjacency[1:] == (directed, reversed, stochastic, heuristic and heuristic.__code__):
         return graph._adjacency[0]
     map = {}
     for n in graph.nodes:
@@ -780,7 +780,7 @@ def adjacency(graph, directed=False, reversed=False, stochastic=False, heuristic
             for id2 in map[id1]: 
                 map[id1][id2] /= n
     # Cache the adjacency map: this makes dijkstra_shortest_path() 2x faster in repeated use.
-    graph._adjacency = (map, directed, reversed, stochastic, heuristic and heuristic.func_code)
+    graph._adjacency = (map, directed, reversed, stochastic, heuristic and heuristic.__code__)
     return map
 
 def dijkstra_shortest_path(graph, id1, id2, heuristic=None, directed=False):
@@ -803,7 +803,7 @@ def dijkstra_shortest_path(graph, id1, id2, heuristic=None, directed=False):
         if n1 == id2:
             return list(flatten(path))[::-1] + [n1]
         path = (n1, path)
-        for (n2, cost2) in G[n1].iteritems():
+        for (n2, cost2) in G[n1].items():
             if n2 not in visited:
                 heappush(q, (cost1 + cost2, n2, path))
 
@@ -826,7 +826,7 @@ def dijkstra_shortest_paths(graph, id, heuristic=None, directed=False):
         (dist, v) = heappop(Q)
         if v in D: continue
         D[v] = dist
-        for w in W[v].iterkeys():
+        for w in W[v].keys():
             vw_dist = D[v] + W[v][w]
             if w not in D and (w not in seen or vw_dist < seen[w]):
                 seen[w] = vw_dist
@@ -842,7 +842,7 @@ def floyd_warshall_all_pairs_distance(graph, heuristic=None, directed=False):
         each linking to a dictionary of node id's linking to path length.
     """
     from collections import defaultdict # Requires Python 2.5+.
-    g = graph.keys()
+    g = list(graph.keys())
     d = defaultdict(lambda: defaultdict(lambda: 1e30)) # float('inf')
     p = defaultdict(dict) # Predecessors.
     for e in graph.edges:
@@ -870,7 +870,7 @@ def floyd_warshall_all_pairs_distance(graph, heuristic=None, directed=False):
         def __init__(self, predecessors, *args, **kwargs):
             dict.__init__(self, *args, **kwargs)
             self.predecessors = predecessors
-    return pdict(p, ((u, dict((v, w) for v,w in d[u].iteritems() if w < 1e30)) for u in d))
+    return pdict(p, ((u, dict((v, w) for v,w in d[u].items() if w < 1e30)) for u in d))
 
 def predecessor_path(tree, u, v):
     """ Returns the path between node u and node v as a list of node id's.
@@ -931,7 +931,7 @@ def brandes_betweenness_centrality(graph, normalized=True, directed=False):
                 b[w] += d[w]
     # Normalize between 0.0 and 1.0.
     m = normalized and max(b.values()) or 1
-    b = dict((id, w/m) for id, w in b.iteritems())
+    b = dict((id, w/m) for id, w in b.items())
     return b
 
 def eigenvector_centrality(graph, normalized=True, reversed=True, rating={}, iterations=100, tolerance=0.0001):
@@ -955,7 +955,7 @@ def eigenvector_centrality(graph, normalized=True, reversed=True, rating={}, ite
     # It has no guarantee of convergence.
     for i in range(iterations):
         v0 = v
-        v  = dict.fromkeys(v0.iterkeys(), 0)
+        v  = dict.fromkeys(iter(v0.keys()), 0)
         for n1 in v:
             for n2 in G[n1]:
                 v[n1] += 0.01 + v0[n2] * G[n1][n2] * rating.get(n1, 1)
@@ -964,7 +964,7 @@ def eigenvector_centrality(graph, normalized=True, reversed=True, rating={}, ite
         if e < len(G) * tolerance:
             # Normalize between 0.0 and 1.0.
             m = normalized and max(v.values()) or 1
-            v = dict((id, w/m) for id, w in v.iteritems())
+            v = dict((id, w/m) for id, w in v.items())
             return v
     warn("node weight is 0 because eigenvector_centrality() did not converge.", Warning)
     return dict((n, 0) for n in G)
@@ -987,8 +987,8 @@ def partition(graph):
     g = []
     for n in graph.nodes:
         g.append(dict.fromkeys((n.id for n in n.flatten()), True))
-    for i in reversed(range(len(g))):
-        for j in reversed(range(i+1, len(g))):
+    for i in reversed(list(range(len(g)))):
+        for j in reversed(list(range(i+1, len(g)))):
             if g[i] and g[j] and len(intersection(g[i], g[j])) > 0:
                 g[i] = union(g[i], g[j])
                 g[j] = []
@@ -1016,7 +1016,7 @@ def clique(graph, id):
     for n in graph.nodes:
         try:
             # Raises StopIteration if all nodes in the clique are connected to n:
-            (id for id in a if n.id==id or graph.edge(n.id, id) is None).next()
+            next((id for id in a if n.id==id or graph.edge(n.id, id) is None))
         except StopIteration:
             a.append(n.id)
     return a
@@ -1189,7 +1189,7 @@ class HTMLCanvasRenderer:
         }
     
     def _escape(self, s):
-        if isinstance(s, basestring):
+        if isinstance(s, str):
             return "\"%s\"" % s.replace("\"", "\\\"")
         return s
     
@@ -1458,7 +1458,7 @@ def render(graph, type=HTML, **kwargs):
     renderer.default.update(kwargs.get("default", {}))
     kwargs["default"] = renderer.default
     kwargs["stylesheet"] = kwargs.get("stylesheet", INLINE)
-    for k,v in kwargs.items():
+    for k,v in list(kwargs.items()):
         if k in renderer.__dict__: 
             renderer.__dict__[k] = v
     return renderer.render(type)
@@ -1468,7 +1468,7 @@ def export(graph, path, overwrite=False, encoding="utf-8", **kwargs):
     renderer.default.update(kwargs.get("default", {}))
     kwargs["default"] = renderer.default
     kwargs["stylesheet"] = kwargs.get("stylesheet", DEFAULT)
-    for k,v in kwargs.items():
+    for k,v in list(kwargs.items()):
         if k in renderer.__dict__: 
             renderer.__dict__[k] = v
     return renderer.export(path, overwrite, encoding)

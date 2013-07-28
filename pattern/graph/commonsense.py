@@ -7,11 +7,11 @@
 ####################################################################################################
 
 from codecs    import BOM_UTF8
-from urllib    import urlopen
+from urllib.request    import urlopen
 from itertools import chain
 
-from __init__ import Graph, Node, Edge, bfs
-from __init__ import WEIGHT, CENTRALITY, EIGENVECTOR, BETWEENNESS
+from .__init__ import Graph, Node, Edge, bfs
+from .__init__ import WEIGHT, CENTRALITY, EIGENVECTOR, BETWEENNESS
 
 import os
 
@@ -160,9 +160,9 @@ class Commonsense(Graph):
             1) function(concept) returns a list of salient properties,
             2) function(edge) returns the cost for traversing this edge (0.0-1.0).
         """
-        if isinstance(concept1, basestring):
+        if isinstance(concept1, str):
             concept1 = self[concept1]
-        if isinstance(concept2, basestring):
+        if isinstance(concept2, str):
             concept2 = self[concept2]
         if isinstance(concept1, Node):
             concept1 = heuristic[0](concept1)
@@ -228,7 +228,7 @@ def download(path=os.path.join(MODULE, "commonsense.csv"), threshold=50):
     # Iterate authors sorted by number of contributions.
     # 1) Authors with 50+ contributions can define new relations and context.
     # 2) Authors with 50- contributions (or robots) can only reinforce existing relations.
-    a = sorted(a.items(), cmp=lambda v1, v2: len(v2[1]) - len(v1[1]))
+    a = sorted(list(a.items()), cmp=lambda v1, v2: len(v2[1]) - len(v1[1]))
     r = {}
     for author, relations in a:
         if author == "" or author.startswith("robots@"):
@@ -252,7 +252,7 @@ def download(path=os.path.join(MODULE, "commonsense.csv"), threshold=50):
                 r[id][1] += int(weight)
     # Export CSV-file.
     s = []
-    for (concept1, relation, concept2), (context, weight) in r.items():
+    for (concept1, relation, concept2), (context, weight) in list(r.items()):
         s.append("\"%s\",\"%s\",\"%s\",\"%s\",%s" % (
             concept1, relation, concept2, context, weight))
     f = open(path, "w")

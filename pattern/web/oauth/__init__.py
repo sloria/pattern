@@ -8,7 +8,7 @@
 ####################################################################################################
 # Naive OAuth implementation for pattern.web.Yahoo and Yahoo! BOSS v2.
 
-import urllib
+import urllib.request, urllib.parse, urllib.error
 import hmac
 import time
 import random
@@ -46,16 +46,16 @@ def timestamp():
     return int(time.time())
 
 def escape(string):
-    return urllib.quote(string, safe="~")
+    return urllib.parse.quote(string, safe="~")
 
 def utf8(string):
-    return isinstance(string, unicode) and string.encode("utf-8") or str(string)
+    return isinstance(string, str) and string.encode("utf-8") or str(string)
 
 def normalize(string):
     # Normalize accents (é => e) for services that have problems with utf-8
     # (used to be the case with Yahoo BOSS but this appears to be fixed now).
     string = utf8(string)
-    for k, v in _diacritics.items():
+    for k, v in list(_diacritics.items()):
         for v in v: 
             string = string.replace(v, k)
     return string

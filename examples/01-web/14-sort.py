@@ -26,4 +26,4 @@ results = sort(
      cached = True)
     
 for weight, term in results:
-    print "%5.2f" % (weight * 100) + "%", term
+    print("%5.2f" % (weight * 100) + "%", term)

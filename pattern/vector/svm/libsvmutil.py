@@ -1,6 +1,6 @@
 #!/usr/bin/env python
 
-from libsvm import *
+from .libsvm import *
 
 import os, sys
 sys.path = [os.path.dirname(os.path.abspath(__file__))] + sys.path 
@@ -35,7 +35,7 @@ def svm_load_model(model_file_name):
 	"""
 	model = libsvm.svm_load_model(model_file_name.encode())
 	if not model: 
-		print("can't open model file %s" % model_file_name)
+		print(("can't open model file %s" % model_file_name))
 		return None
 	model = toPyModel(model)
 	return model
@@ -150,11 +150,11 @@ def svm_train(arg1, arg2=None, arg3=None):
 		libsvm.svm_cross_validation(prob, param, nr_fold, target)	
 		ACC, MSE, SCC = evaluations(prob.y[:l], target[:l])
 		if param.svm_type in [EPSILON_SVR, NU_SVR]:
-			print("Cross Validation Mean squared error = %g" % MSE)
-			print("Cross Validation Squared correlation coefficient = %g" % SCC)
+			print(("Cross Validation Mean squared error = %g" % MSE))
+			print(("Cross Validation Squared correlation coefficient = %g" % SCC))
 			return MSE
 		else:
-			print("Cross Validation Accuracy = %g%%" % ACC)
+			print(("Cross Validation Accuracy = %g%%" % ACC))
 			return ACC
 	else:
 		m = libsvm.svm_train(prob, param)

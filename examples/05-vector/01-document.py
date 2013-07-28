@@ -30,8 +30,8 @@ before its flight window closed this Monday.
 # With threshold=1, only words that occur more than once are counted.
 # With stopwords=False, words like "the", "and", "I", "is" are ignored.
 document = Document(s, threshold=1, stopwords=False)
-print document.terms
-print
+print(document.terms)
+print()
 
 # The /corpus folder contains texts mined from Wikipedia.
 # Below is the mining script (we already executed it for you):
@@ -54,24 +54,24 @@ print
 f = os.path.join("corpus", "wolf.txt")
 s = codecs.open(f, encoding="utf-8").read()
 document = Document(s, name="wolf", stemmer=PORTER)
-print document
-print document.keywords(top=10) # (weight, feature)-items.
-print
+print(document)
+print(document.keywords(top=10)) # (weight, feature)-items.
+print()
 
 # Same document, using lemmatization instead of stemming (slower):
 document = Document(s, name="wolf", stemmer=LEMMA)
-print document
-print document.keywords(top=10)
-print
+print(document)
+print(document.keywords(top=10))
+print()
 
 # In summary, a document is a bag-of-words representation of a text.
 # Bag-of-words means that the word order is discarded.
 # The dictionary of words (features) and their normalized word count (weights)
 # is also called the document vector:
 document = Document("a black cat and a white cat", stopwords=True)
-print document.terms
-print document.vector.features
-for feature, weight in document.vector.items():
-    print feature, weight
+print(document.terms)
+print(document.vector.features)
+for feature, weight in list(document.vector.items()):
+    print(feature, weight)
 
 # Document vectors can be bundled into a Model (next example).

@@ -108,14 +108,14 @@ __author__ = 'Bob Ippolito <bob@redivi.com>'
 
 from decimal import Decimal
 
-from decoder import JSONDecoder, JSONDecodeError
-from encoder import JSONEncoder
+from .decoder import JSONDecoder, JSONDecodeError
+from .encoder import JSONEncoder
 def _import_OrderedDict():
     import collections
     try:
         return collections.OrderedDict
     except AttributeError:
-        import ordered_dict
+        from . import ordered_dict
         return ordered_dict.OrderedDict
 OrderedDict = _import_OrderedDict()
 
@@ -469,9 +469,9 @@ def loads(s, encoding=None, cls=None, object_hook=None, parse_float=None,
 
 
 def _toggle_speedups(enabled):
-    import decoder as dec
-    import encoder as enc
-    import scanner as scan
+    from . import decoder as dec
+    from . import encoder as enc
+    from . import scanner as scan
     c_make_encoder = _import_c_make_encoder()
     if enabled:
         dec.scanstring = dec.c_scanstring or dec.py_scanstring

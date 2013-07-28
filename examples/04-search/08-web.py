@@ -34,5 +34,5 @@ for i in range(1): # max=10
 
 pprint(d)
 
-print
-print len(d), "results."
+print()
+print(len(d), "results.")

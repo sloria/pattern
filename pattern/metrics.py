@@ -9,7 +9,7 @@ from time import time
 from math import sqrt, floor, modf, exp, pi, log
 
 from collections import defaultdict, deque
-from itertools   import izip, chain
+from itertools   import chain
 from operator    import itemgetter
 from heapq       import nlargest
 
@@ -31,7 +31,7 @@ class Counter(dict):
         if kwargs:
             self.update(kwargs)
         if hasattr(iterable, "items"):
-            for k, v in iterable.items(): 
+            for k, v in list(iterable.items()): 
                 self[k] = self.get(k, 0) + v
         elif hasattr(iterable, "__getitem__") \
           or hasattr(iterable, "__iter__"):
@@ -42,8 +42,8 @@ class Counter(dict):
         """ Returns a list of the n most common (element, count)-tuples.
         """
         if n is None:
-            return sorted(self.items(), key=itemgetter(1), reverse=True)
-        return nlargest(n, self.items(), key=itemgetter(1))
+            return sorted(list(self.items()), key=itemgetter(1), reverse=True)
+        return nlargest(n, list(self.items()), key=itemgetter(1))
 
     def copy(self):
         return Counter(self)
@@ -206,7 +206,7 @@ def auc(curve=[]):
     """
     curve = sorted(curve)
     # Trapzoidal rule: area = (a + b) * h / 2, where a=y0, b=y1 and h=x1-x0.
-    return sum(0.5 * (x1 - x0) * (y1 + y0) for (x0, y0), (x1, y1) in sorted(izip(curve, curve[1:])))
+    return sum(0.5 * (x1 - x0) * (y1 + y0) for (x0, y0), (x1, y1) in sorted(zip(curve, curve[1:])))
 
 #### AGREEMENT #####################################################################################
 # +1.0 = total agreement between voters
@@ -231,9 +231,9 @@ def fleiss_kappa(m):
         return 1.0
     assert all(sum(row) == n for row in m[1:]), "numer of votes for each task differs"
     # p[j] = the proportion of all assignments which were to the j-th category.
-    p = [sum(m[i][j] for i in xrange(N)) / float(N*n) for j in xrange(k)]
+    p = [sum(m[i][j] for i in range(N)) / float(N*n) for j in range(k)]
     # P[i] = the extent to which voters agree for the i-th subject.
-    P = [(sum(m[i][j]**2 for j in xrange(k)) - n) / float(n * (n-1)) for i in xrange(N)]
+    P = [(sum(m[i][j]**2 for j in range(k)) - n) / float(n * (n-1)) for i in range(N)]
     # Pm = the mean of P[i] and Pe.
     Pe = sum(pj**2 for pj in p)
     Pm = sum(P) / N
@@ -256,7 +256,7 @@ def levenshtein(string1, string2):
     if n > m: 
         # Make sure n <= m to use O(min(n,m)) space.
         string1, string2, n, m = string2, string1, m, n
-    current = range(n+1)
+    current = list(range(n+1))
     for i in range(1, m+1):
         previous, current = current, [i]+[0]*n
         for j in range(1, n+1):
@@ -437,7 +437,7 @@ def suffixes(inflections=[], n=3, top=10, reverse=True):
     # Sort by frequency of inflected suffix: 2x -nes, 1x -aux.
     # Sort by frequency of base suffixes for each inflection:
     # [(2, "nes", [("ne", 0.5), ("n", 0.5)]), (1, "aux", [("au", 1.0)])]
-    d = [(int(sum(y.values())), x, y.items()) for x, y in d.items()]
+    d = [(int(sum(y.values())), x, list(y.items())) for x, y in list(d.items())]
     d = sorted(d, reverse=True)
     d = ((n, x, (sorted(y, key=itemgetter(1)))) for n, x, y in d)
     d = ((n, x, [(y, m / n) for y, m in y]) for n, x, y in d)
@@ -499,7 +499,7 @@ def cooccurrence(iterable, window=(-1,-1), match=lambda x: False, filter=lambda 
                     for x2 in list(q).__getslice__(i+window[0], i+window[1]+1):
                         if not isinstance(x2, Sentinel):
                             x2 = normalize(x2)
-                            if filter(x2):
+                            if list(filter(x2)):
                                 if x1 not in m:
                                     m[x1] = {}
                                 if x2 not in m[x1]:
@@ -548,7 +548,7 @@ def median(list):
     s = sorted(list)
     n = len(list)
     if n == 0:
-        raise ValueError, "median() arg is an empty sequence"
+        raise ValueError("median() arg is an empty sequence")
     if n % 2 == 0:
         return float(s[(n/2)-1] + s[n/2]) / 2
     return s[n/2]
@@ -583,7 +583,7 @@ def histogram(list, k=10, range=None):
         range = (min(list), max(list))
     k = max(int(k), 1)
     w = float(range[1] - range[0] + 0.000001) / k # interval (bin width)
-    h = [[] for i in xrange(k)]
+    h = [[] for i in range(k)]
     for x in list:
         i = int(floor((x-range[0]) / w))
         if 0 <= i < len(h): 
@@ -642,7 +642,7 @@ def quantile(list, p=0.5, sort=True, a=1, b=-1, c=0, d=1):
     n = len(list)
     f, i = modf(a + (b+n) * p - 1)
     if n == 0:
-        raise ValueError, "quantile() arg is an empty sequence"
+        raise ValueError("quantile() arg is an empty sequence")
     if f == 0: 
         return float(s[int(i)])
     if i < 0: 
@@ -841,7 +841,7 @@ def gammai(a, x, tail=UPPER):
             s = s + d
             if abs(d) < abs(s) * epsilon:
                 return (s * exp(-x + a * log(x) - ln), ln)
-        raise StopIteration, (abs(d), abs(s) * epsilon)
+        raise StopIteration(abs(d), abs(s) * epsilon)
     
     # Continued fraction approximation of the incomplete gamma function.
     def gf(a, x, epsilon=3.e-7, iterations=200):
@@ -863,7 +863,7 @@ def gammai(a, x, tail=UPPER):
                 if abs((g - g0) / g) < epsilon:
                     return (g * exp(-x + a * log(x) - ln), ln)
                 g0 = g
-        raise StopIteration, (abs((g-g0) / g))
+        raise StopIteration(abs((g-g0) / g))
 
     if a <= 0.0:
         return 1.0
